@@ -44,5 +44,5 @@
     })
     .catch((err) =>{
       return null ? console.log("une erreur s'est produite lors du chargement des fiches produit")
-        : console.log('les fiches produits ont été correctement chargées');;
+        : console.log('les fiches produits ont été correctement chargées');
     });
