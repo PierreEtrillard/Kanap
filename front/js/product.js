@@ -11,9 +11,10 @@ fetch(`http://localhost:3000/api/products/${productId}`)
           "Fiche produit indisponible, merci de vous connecter ulterieurement."
         );
   })
-  //      EXTRACTION DES DONNÉES
+  //      EXTRACTION DES DONNÉES & IMPLÉMENTATION DE CELLES-CI DANS LE DOM
   .then((value) => {
     console.log(value);
+    document.querySelector("div.item__img").innerHTML = `<img src="${value.imageUrl}">`;
     document.getElementById("title").innerHTML = `${value.name}`;
     document.getElementById("price").innerHTML = `${value.price}`;
     document.getElementById("description").innerHTML = `${value.description}`;
@@ -31,5 +32,6 @@ fetch(`http://localhost:3000/api/products/${productId}`)
       ? console.log(
           "une erreur s'est produite lors du chargement de la fiche produit"
         )
-      : console.log("la fiche produit à été correctement chargée");
+      : console.log("la fiche produit à été correctement chargée mais une erreur dans son implémentation est détectée");
   });
+// document.getElementById('addToCart').addEventListener('click','onclick');
