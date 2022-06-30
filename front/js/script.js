@@ -28,11 +28,11 @@
       // "i" prendra la valeur de chaque indice d'objets du tableau fournis par l'api
       for (let i in value){
       //    CREATION D'UNE "<div id='(valeur de l'id du produit visé)'>"  //
-      let newCard = document.createElement("div");
+      const newCard = document.createElement("div");
       newCard.setAttribute("id", `${value[i]._id}`);
     
       // INTEGRATION DU NOUVEL ELEMENT DANS LE DOM
-      let itemWrapper = document.getElementById("items");
+      const itemWrapper = document.getElementById("items");
       itemWrapper.appendChild(newCard).innerHTML =
       `<a href="./product.html?id=${value[i]._id}">
           <article>
@@ -43,6 +43,5 @@
         </a>`};
     })
     .catch((err) =>{
-      return null ? console.log("une erreur s'est produite lors du chargement des fiches produit")
-        : console.log('les fiches produits ont été correctement chargées');
+      console.log(err);
     });
