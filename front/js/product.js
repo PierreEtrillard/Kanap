@@ -1,6 +1,12 @@
+//  VARIABLES GLOBALS
+const colorChoice = document.getElementById("colors");
+const quantity = document.getElementById("quantity");
+let productName;
+let cart = localStorage.cart ? JSON.parse(localStorage.cart) : [];
 // Récupération de l'ID de produits dans l'URL
 const actualUrl = new URL(document.location.href);
 const productId = actualUrl.searchParams.get("id");
+//----------------------------------------------------------------------------
 
 //       RECUPÉRATION DES DETAILS DU PRODUIT AUPRÈS DE L'API
 fetch(`http://localhost:3000/api/products/${productId}`)
@@ -14,7 +20,7 @@ fetch(`http://localhost:3000/api/products/${productId}`)
   })
   //      EXTRACTION DES DONNÉES & IMPLÉMENTATION DE CELLES-CI DANS LE DOM
   .then((value) => {
-    // console.log(value);
+    productName = value.name;// <- variable utilisé pour les interactions utilisateur lors des saisies du pannier
     document.querySelector(
       "div.item__img"
     ).innerHTML = `<img src="${value.imageUrl}" alt="photographie du modéle ${value.name}">`;
@@ -28,10 +34,8 @@ fetch(`http://localhost:3000/api/products/${productId}`)
       colorOption.setAttribute("value", value.colors[c]);
       const colorSelector = document.getElementById("colors");
       colorSelector.appendChild(colorOption).innerText = value.colors[c];
-      // console.log(value.colors.length)
     }
   })
-
   .catch((err) => {
     console.log(
       "une erreur s'est produite lors du traitement de la fiche produit",
@@ -39,76 +43,54 @@ fetch(`http://localhost:3000/api/products/${productId}`)
     );
   });
 
-const colorChoice = document.getElementById("colors");
-console.log("input:colors", colorChoice, colorChoice.value);
-const quantity = document.getElementById("quantity");
-console.log("input:quantity", quantity, quantity.value);
-
-let cart = localStorage.cart ? JSON.parse(localStorage.cart) : [];
-console.log("cart", cart);
+ /*  REMPLISSAGE DU PANNIER AU CLIC AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDE 
+  OU AVEC LES DONNÉES PRÉCEDEMMENT SAISIE (contenu dans le localstorage)*/
 
 document.getElementById("addToCart").addEventListener("click", () => {
-  /*  REMPLISSAGE DU PANNIER AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDE 
-  OU AVEC LES DONNÉES PRÉCEDEMMENT SAISIE (contenu dans le localstorage)*/
-  const chosenColor = colorChoice.value;
-  const chosenQuantity = quantity.value;
-  console.log(`onClick - color: ${chosenColor}`);
-  console.log(`onClick - quantity: ${chosenQuantity}`);
-  console.log(`onClick - card: ${cart}`);
-
+ //  Vérifie la conformitée des saisies de quantité et couleurs
   if (colorChoice.value == "") {
     alert("veuillez séléctionner la couleur de votre canapé.");
-  } else if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
+  }
+  else if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
     alert("veuillez saisir un nombre d'article entre 1 et 100.");
-  } else {
+  }
+  
+  else {//  SAISIE CONFORME = CONSTANTE POUR CIBLAGE DES PRODUITS DÉJA PRÉSENTS 
     const similarIdStored = cart.find((elt) => elt.id === `${productId}`);
-    console.log("similarId", productId, similarIdStored);
-    const similarColorStored = cart.find(
-      (elt) => elt.color === `${colorChoice.value}`
-    );
-    console.log("similarColor", colorChoice.value, similarColorStored);
-    const similarProductStored = similarColorStored && similarIdStored;
-
-    console.log(`onClick - similarIdStored: ${similarIdStored}`);
-    console.log(`onClick - similarColorStored: ${similarColorStored}`);
-
+    const similarColorStored = cart.find((elt) => elt.color === `${colorChoice.value}`);
+    
+    // Vérifier la présence d'un objet dans le tableau 'cart'
     if (cart.length < 1 || typeof similarIdStored === `undefined`) {
       cart.push({
         id: `${productId}`,
         color: `${colorChoice.value}`,
         amount: `${Number(quantity.value)}`,
       });
-      console.log(
-        `Création d'un nouvel objet au tableau cart contenant ceci: ${cart}`
-      );
+
+    // Vérifier si une commande du même article mais de couleur différente est présent
     } else if (
-      similarIdStored.id == `${productId}` &&
-      typeof similarColorStored === `undefined`
-    ) {
-      {
+      similarIdStored.id === `${productId}` &&
+      typeof similarColorStored === `undefined`) {
+      {//création d'un nouvelle objet 
         cart.push({
           id: `${productId}`,
           color: `${colorChoice.value}`,
           amount: `${Number(quantity.value)}`,
-        });
-        console.log(`ajout le l'objet au tableau cart contenant ceci: ${cart}`);
-      }
-    } else if (
-      similarIdStored.id == `${productId}` &&
-      similarColorStored.color == `${colorChoice.value}`
-    ) {
-      similarColorStored.amount =
-        Number(similarColorStored.amount) + Number(quantity.value);
+        })
+      };
 
-      console.log(`Mise à jour du tableau cart contenant ceci: ${cart}`);
+    // Vérifier si une commande du même article et de la même couleur est présent
+    } else if (similarIdStored.id == `${productId}` &&
+              similarColorStored.color == `${colorChoice.value}`)
+      // ajout de la quantité saisie sur la page au total présent déja présent au pannier
+    { similarColorStored.amount = Number(similarColorStored.amount) + Number(quantity.value);
+            // limitateur de quantité (si dépassement réglage de la quantité à 100 et alerte l'utilisateur)
+            if (similarColorStored.amount >= 100) 
+            similarColorStored.amount = 100;
+            alert(`Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`);
     }
   }
-//    Verifier si la commande ne dépasse pas les 100 article avant l'envoi au localstorage
-  console.log(`après le click, cart contient: ${cart}`);
-
+  //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
   cartStringed = JSON.stringify(cart);
-  console.log("après le clique, cartStringed = " + cartStringed);
-
   localStorage.cart = cartStringed;
-  console.log("après le clique, localStorage.cart  = " + localStorage.cart);
 });
