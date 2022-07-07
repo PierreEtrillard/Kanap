@@ -1,11 +1,12 @@
 //  VARIABLES GLOBALS
-const colorChoice = document.getElementById("colors");
-const quantity = document.getElementById("quantity");
-let productName;
 let cart = localStorage.cart ? JSON.parse(localStorage.cart) : [];
 // Récupération de l'ID de produits dans l'URL
 const actualUrl = new URL(document.location.href);
 const productId = actualUrl.searchParams.get("id");
+let productName;
+const colorChoice = document.getElementById("colors");
+const quantity = document.getElementById("quantity");
+
 //----------------------------------------------------------------------------
 
 //       RECUPÉRATION DES DETAILS DU PRODUIT AUPRÈS DE L'API
@@ -49,15 +50,15 @@ fetch(`http://localhost:3000/api/products/${productId}`)
 document.getElementById("addToCart").addEventListener("click", () => {
  //  Vérifie la conformitée des saisies de quantité et couleurs
   if (colorChoice.value == "") {
-    alert("veuillez séléctionner la couleur de votre canapé.");
+    return alert("veuillez séléctionner la couleur de votre canapé.");
   }
-  else if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
-    alert("veuillez saisir un nombre d'article entre 1 et 100.");
+  if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
+    return alert("veuillez saisir un nombre d'article entre 1 et 100.");
   }
   
-  else {//  SAISIE CONFORME = CONSTANTE POUR CIBLAGE DES PRODUITS DÉJA PRÉSENTS 
-    const similarIdStored = cart.find((elt) => elt.id === `${productId}`);
-    const similarColorStored = cart.find((elt) => elt.color === `${colorChoice.value}`);
+ //  SAISIE CONFORME = CONSTANTE POUR CIBLAGE DES PRODUITS DÉJA PRÉSENTS 
+    const similarIdStored = cart.find((elt) => elt.id === productId);
+    const similarColorStored = cart.find((elt) => elt.color === colorChoice.value);
     
     // Vérifier la présence d'un objet dans le tableau 'cart'
     if (cart.length < 1 || typeof similarIdStored === `undefined`) {
@@ -71,7 +72,7 @@ document.getElementById("addToCart").addEventListener("click", () => {
     } else if (
       similarIdStored.id === `${productId}` &&
       typeof similarColorStored === `undefined`) {
-      {//création d'un nouvelle objet 
+      {//création d'un nouvel objet 
         cart.push({
           id: `${productId}`,
           color: `${colorChoice.value}`,
@@ -89,7 +90,7 @@ document.getElementById("addToCart").addEventListener("click", () => {
             similarColorStored.amount = 100;
             alert(`Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`);
     }
-  }
+  
   //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
   cartStringed = JSON.stringify(cart);
   localStorage.cart = cartStringed;
