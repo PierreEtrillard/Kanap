@@ -5,47 +5,28 @@ let cart = localStorage.cart
 const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
-let promisesFromApi = [];
-let quantitySelectors = [];
 let totalQuantity = 0;
 let totalOrder = 0;
+const submitBtn = document.getElementById('order');
 
-function datacollector() {
+async function datacollector() {
   // POUR CHAQUES OBJETS DE 'cart', RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT
-  for (let elements of cart) {
-    fetch(`http://localhost:3000/api/products/${elements.id}`)
+    for (let elements of cart) {
+    await fetch(`http://localhost:3000/api/products/${elements.id}`)
       .then((res) => {
         return res.ok
           ? res.json()
           : alert("Produit indisponible pour le moment.");
       })
       .then((value) => {
+        // creation des argument imgSrc,altTxt, name, price pour chaques produits de cart[]
         elements["imgSrc"] = value.imageUrl;
         elements["altTxt"] = value.altTxt;
         elements["name"] = value.name;
         elements["price"] = value.price;
-
-        let currentPromise = new Promise((resolve) => {
-          resolve(elements);
-        });
-        promisesFromApi.push(currentPromise);
-        console.log(promisesFromApi);
         
-itemFiller()
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-}
-const promiseAll = Promise.all(promisesFromApi).then((value)=>{value})
-console.log(promiseAll);
-datacollector();
-async function itemFiller(){
-await Promise.all(promisesFromApi).then(() => {
-  for (let elements of promisesFromApi) {
-    console.log(elements);
-    itemsAnchor.innerHTML += `
+        // implémentation des elements dans le DOM pour chaques produits 
+        itemsAnchor.innerHTML += `
           <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
               <div class="cart__item__img">
                 <img src="${elements.imgSrc}" alt="${elements.altTxt}">
@@ -68,20 +49,33 @@ await Promise.all(promisesFromApi).then(() => {
               </div>
             </article>
           `;
-    // SOMME DES PRODUIT ET PRIX TOTAL
-    totalQuantity += +elements.amount;
-    totalQuantityAnchor.innerText = totalQuantity;
-    totalOrder += +(elements.amount * elements.price);
-    totalPriceAnchor.innerText = totalOrder;
+        // SOMME DES PRODUIT ET PRIX TOTAL
+        totalQuantity += +elements.amount;
+        totalQuantityAnchor.innerText = totalQuantity;
+        totalOrder += +(elements.amount * elements.price);
+        totalPriceAnchor.innerText = totalOrder;
+        console.log('avant ?')
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
-});
+  
+quantityAjustor()
+  }
 // RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ
-quantitySelectors = document.querySelectorAll("input.itemQuantity");
-for (let selector in quantitySelectors) {
-  console.log(selector);
-  selector.addEventListener('change',()=>{console.log('créer une fonction ciblant le .amount du bon produit au sein de "cart"')})
+async function quantityAjustor(){
+  console.log('après ?')
+  const quantitySelectors = document.querySelectorAll('input.itemQuantity')
+  console.log(quantitySelectors)
 }
-}
+
+
+submitBtn.addEventListener('click',()=> {
+  alert("commande envoyée")
+})
+
+datacollector();
 // document.addEventListener('change',alert('quelque chose à changé'))
 
 // function quantityAjustor() {

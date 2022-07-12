@@ -25,7 +25,7 @@
     })
     //      EXTRACTION DES DONNÉES
     .then((value) => {
-      // "i" prendra la valeur de chaque indice d'objets du tableau fournis par l'api
+      // "i" prendra la valeur de chaques indices du tableau fournis par l'api
       for (let i in value){
       //    CREATION D'UNE "<div id='(valeur de l'id du produit visé)'>"  //
       const newCard = document.createElement("div");
