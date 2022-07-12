@@ -7,11 +7,11 @@ const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
 let totalQuantity = 0;
 let totalOrder = 0;
-const submitBtn = document.getElementById('order');
+const submitBtn = document.getElementById("order");
 
 async function datacollector() {
   // POUR CHAQUES OBJETS DE 'cart', RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT
-    for (let elements of cart) {
+  for (let elements of cart) {
     await fetch(`http://localhost:3000/api/products/${elements.id}`)
       .then((res) => {
         return res.ok
@@ -24,8 +24,8 @@ async function datacollector() {
         elements["altTxt"] = value.altTxt;
         elements["name"] = value.name;
         elements["price"] = value.price;
-        
-        // implémentation des elements dans le DOM pour chaques produits 
+
+        // implémentation des elements dans le DOM pour chaques produits
         itemsAnchor.innerHTML += `
           <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
               <div class="cart__item__img">
@@ -54,66 +54,39 @@ async function datacollector() {
         totalQuantityAnchor.innerText = totalQuantity;
         totalOrder += +(elements.amount * elements.price);
         totalPriceAnchor.innerText = totalOrder;
-        console.log('avant ?')
+        console.log("avant ?");
       })
       .catch((err) => {
         console.log(err);
       });
   }
-  
-quantityAjustor()
-  }
+  quantityAjustor();
+}
 // RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ
-async function quantityAjustor(){
-  console.log('après ?')
-  const quantitySelectors = document.querySelectorAll('input.itemQuantity')
-  console.log(quantitySelectors)
+async function quantityAjustor() {
+  console.log("après ?");
+  const quantitySelectors = document.querySelectorAll("input.itemQuantity");//retourne une NodeList()
+  // Creation d'une boucle ajoutant un ecouteur d'évènement 'change' sur chaques input.itemQuantity
+  for (let selector of quantitySelectors) {
+    // ciblage des produits concernés par la modification de quantité
+    let productFixer = selector.closest('article');
+    let similarIdStored = cart.find((prod) => prod.id);
+    let similarColorStored = cart.find((prod) => prod.color);
+    if (
+      (similarColorStored.color===productFixer.dataset.color)
+      &&
+      (similarIdStored.id===productFixer.dataset.id)){
+        selector.value = similarIdStored.amount;
+     }
+    else {console.log ("Valeur differente")}
+    selector.addEventListener('change',()=>{console.log(selector.value);}); 
+  }
 }
 
-
-submitBtn.addEventListener('click',()=> {
-  alert("commande envoyée")
-})
+submitBtn.addEventListener("click", () => {
+  alert("commande envoyée");
+});
 
 datacollector();
+
 // document.addEventListener('change',alert('quelque chose à changé'))
-
-// function quantityAjustor() {
-
-//     // quantitySelectors.forEach(selectors => selectors.addEventListener('change',alert('valeur modifiée'))
-
-// }
-// EVENEMENT A LA SUPPRESSION OU CORRECTION DE QUANTITÉE DU PRODUIT
-
-//  for (let i in itemSelectorList){}
-//     console.log(i.target.dataset.id
-// );
-// }
-// quantityAjustor()
-
-// for( let i = 0; i < localStorage.length; i++){
-//     console.log(localStorage.key(i));
-// // }
-// EXO PROMISES
-// const promisecollector = [];
-// let promiseTest = new Promise((resolve, reject) => {
-//   for (let e = 0; e < 10; ++e) {
-//     promisecollector.push(
-//       new Promise((res, err) => {
-//         setTimeout(() => {
-//           res("réponse de l'indice " + e + " :" + e);
-//         }, e * 1000);
-//       })
-//     );
-//   }
-// });
-// promisecollector[5]
-//   .then((res) => {
-//     console.log(res);
-//   })
-//   .catch((rej) => {
-//     console.log(rej);
-//   });
-// Promise.all(promisecollector).then(() => {
-//   console.log("promise collector contient : " + promisecollector);
-// });
