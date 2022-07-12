@@ -48,7 +48,7 @@ fetch(`http://localhost:3000/api/products/${productId}`)
   OU AVEC LES DONNÉES PRÉCEDEMMENT SAISIE (contenu dans le localstorage)*/
 
 document.getElementById("addToCart").addEventListener("click", () => {
- //  Vérifie la conformitée des saisies de quantité et couleurs
+ //  Vérifie la saisies de quantité et de couleurs
   if (colorChoice.value == "") {
     return alert("veuillez séléctionner la couleur de votre canapé.");
   }
@@ -61,37 +61,27 @@ document.getElementById("addToCart").addEventListener("click", () => {
     const similarColorStored = cart.find((elt) => elt.color === colorChoice.value);
     
     // Vérifier la présence d'un objet dans le tableau 'cart'
-    if (cart.length < 1 || typeof similarIdStored === `undefined`) {
+    if ((cart.length < 1 || typeof similarIdStored === `undefined`)
+    || // Vérifier si une commande du même article mais de couleur différente est présent
+    (similarIdStored.id === productId &&  typeof similarColorStored === `undefined`)
+    ) 
+    {// Si l'une ou l'autre de ces conditions est réuni, création d'un nouvel objet dans cart[] 
       cart.push({
         id: `${productId}`,
         color: `${colorChoice.value}`,
         amount: `${Number(quantity.value)}`,
       });
-
-    // Vérifier si une commande du même article mais de couleur différente est présent
-    } else if (
-      similarIdStored.id === `${productId}` &&
-      typeof similarColorStored === `undefined`) {
-      {//création d'un nouvel objet 
-        cart.push({
-          id: `${productId}`,
-          color: `${colorChoice.value}`,
-          amount: `${Number(quantity.value)}`,
-        })
-      };
-
     // Vérifier si une commande du même article et de la même couleur est présent
-    } else if (similarIdStored.id == `${productId}` &&
-              similarColorStored.color == `${colorChoice.value}`)
+    } else if (similarIdStored.id == productId &&
+              similarColorStored.color == colorChoice.value)
       // ajout de la quantité saisie sur la page au total présent déja présent au pannier
     { similarColorStored.amount = Number(similarColorStored.amount) + Number(quantity.value);
-            // limitateur de quantité (si dépassement réglage de la quantité à 100 et alerte l'utilisateur)
-            if (similarColorStored.amount >= 100) 
+            // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
+            if (similarColorStored.amount >= 100) {
             similarColorStored.amount = 100;
             alert(`Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`);
-    }
-  
+            }
+      }
   //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
-  cartStringed = JSON.stringify(cart);
-  localStorage.cart = cartStringed;
+  localStorage.cart = JSON.stringify(cart);
 });
