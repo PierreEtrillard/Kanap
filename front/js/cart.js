@@ -65,21 +65,32 @@ async function datacollector() {
 // RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ
 async function quantityAjustor() {
   console.log("après ?");
-  const quantitySelectors = document.querySelectorAll("input.itemQuantity");//retourne une NodeList()
+  //NodeList() des balises input.itemQuantity et p.deleteItem
+  const quantitySelectors = document.querySelectorAll("input.itemQuantity");
+  const productDeletors = document.querySelectorAll("p.deleteItem");
   // Creation d'une boucle ajoutant un ecouteur d'évènement 'change' sur chaques input.itemQuantity
   for (let selector of quantitySelectors) {
-    // ciblage des produits concernés par la modification de quantité
+    /*ciblage des produits concernés par la modification de quantité 
+    grâce aux dataset.color & dataset.id de la balise 'article' la
+    plus proches de l'input.itemQuantity*/
     let productFixer = selector.closest('article');
-    let similarIdStored = cart.find((prod) => prod.id);
-    let similarColorStored = cart.find((prod) => prod.color);
-    if (
-      (similarColorStored.color===productFixer.dataset.color)
-      &&
-      (similarIdStored.id===productFixer.dataset.id)){
-        selector.value = similarIdStored.amount;
-     }
-    else {console.log ("Valeur differente")}
-    selector.addEventListener('change',()=>{console.log(selector.value);}); 
+    
+     selector.addEventListener('change',()=>{
+      /* boucle sur cart pour pour trouver la correspondance entre le produit
+      ciblé et le produit du pannier dont la quantité doit être modifiée*/
+      cart.forEach(prod => {
+        if (
+        (prod.color===productFixer.dataset.color)
+        &&
+        (prod.id===productFixer.dataset.id)){
+          if (selector.value >= 100){ 
+            alert(`Vous avez atteint la limite des 100 articles maximum pour la gamme ${prod.name} colori ${prod.color}`);
+           }
+            prod.amount = selector.value;
+            localStorage.cart = JSON.stringify(cart);
+        }
+      });
+    }); 
   }
 }
 
