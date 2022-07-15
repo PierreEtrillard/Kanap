@@ -21,7 +21,7 @@ fetch(`http://localhost:3000/api/products/${productId}`)
   })
   //      EXTRACTION DES DONNÉES & IMPLÉMENTATION DE CELLES-CI DANS LE DOM
   .then((value) => {
-    productName = value.name;// <- variable utilisé pour les interactions utilisateur lors des saisies du pannier
+    productName = value.name; // <- variable utilisé pour les interactions utilisateur lors des saisies du pannier
     document.querySelector(
       "div.item__img"
     ).innerHTML = `<img src="${value.imageUrl}" alt="photographie du modéle ${value.name}">`;
@@ -44,44 +44,52 @@ fetch(`http://localhost:3000/api/products/${productId}`)
     );
   });
 
- /*  REMPLISSAGE DU PANNIER AU CLIC AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDE 
+/*  REMPLISSAGE DU PANNIER AU CLIC AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDE 
   OU AVEC LES DONNÉES PRÉCEDEMMENT SAISIE (contenu dans le localstorage)*/
 
 document.getElementById("addToCart").addEventListener("click", () => {
- //  Vérifie la saisies de quantité et de couleurs
+  //  Vérifie la saisies de quantité et de couleurs
   if (colorChoice.value == "") {
     return alert("veuillez séléctionner la couleur de votre canapé.");
   }
   if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
     return alert("veuillez saisir un nombre d'article entre 1 et 100.");
   }
-  
- //  SAISIE CONFORME = CONSTANTE POUR CIBLAGE DES PRODUITS DÉJA PRÉSENTS 
-    const similarIdStored = cart.find((elt) => elt.id === productId);
-    const similarColorStored = cart.find((elt) => elt.color === colorChoice.value);
-    
-    // Vérifier la présence d'un objet dans le tableau 'cart'
-    if ((cart.length < 1 || typeof similarIdStored === `undefined`)
-    || // Vérifier si une commande du même article mais de couleur différente est présent
-    (similarIdStored.id === productId &&  typeof similarColorStored === `undefined`)
-    ) 
-    {// Si l'une ou l'autre de ces conditions est réuni, création d'un nouvel objet dans cart[] 
-      cart.push({
-        id: `${productId}`,
-        color: `${colorChoice.value}`,
-        amount: `${Number(quantity.value)}`,
-      });
-    // Vérifier si une commande du même article et de la même couleur est présent
-    } else if (similarIdStored.id == productId &&
-              similarColorStored.color == colorChoice.value)
-      // ajout de la quantité saisie sur la page au total présent déja présent au pannier
-    { similarColorStored.amount = Number(similarColorStored.amount) + Number(quantity.value);
-            // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
-            if (similarColorStored.amount >= 100) {
-            similarColorStored.amount = 100;
-            alert(`Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`);
-            }
-      }
+
+  //  SAISIE CONFORME = CONSTANTE POUR CIBLAGE DES PRODUITS DÉJA PRÉSENTS
+  const similarProductStored = cart.find(
+    (produit) => produit.color === colorChoice.value && produit.id === productId
+  );
+  if (
+    //Si cart[] ne contient pas de produit similaire (même ID même couleur)
+    similarProductStored === undefined
+  ) {
+    //création d'un nouvel objet dans cart[]
+    cart.push({
+      id: `${productId}`,
+      color: `${colorChoice.value}`,
+      amount: `${Number(quantity.value)}`,
+    });
+    alert(
+      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au pannier`
+    );
+  } else {
+    //Sinon, ajout de la quantité saisie sur la page au total déja présent au pannier
+    similarProductStored.amount =
+      Number(similarProductStored.amount) + Number(quantity.value);
+
+    // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
+    if (similarProductStored.amount >= 100) {
+      similarProductStored.amount = 100;
+      alert(
+        `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`
+      );
+    } else {
+      alert(
+        `Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au pannier`
+      );
+    }
+  }
   //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
   localStorage.cart = JSON.stringify(cart);
 });

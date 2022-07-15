@@ -8,6 +8,7 @@ const totalQuantityAnchor = document.getElementById("totalQuantity");
 let totalQuantity = 0;
 let totalOrder = 0;
 const submitBtn = document.getElementById("order");
+let cartWhithoutProd;
 
 async function datacollector() {
   // POUR CHAQUES OBJETS DE 'cart', RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT
@@ -67,30 +68,54 @@ async function quantityAjustor() {
   console.log("après ?");
   //NodeList() des balises input.itemQuantity et p.deleteItem
   const quantitySelectors = document.querySelectorAll("input.itemQuantity");
-  const productDeletors = document.querySelectorAll("p.deleteItem");
-  // Creation d'une boucle ajoutant un ecouteur d'évènement 'change' sur chaques input.itemQuantity
+  const productSuppressors = document.querySelectorAll("p.deleteItem");
+  console.log(
+    `quantitySelectors = ${quantitySelectors}productSuppressors = ${productSuppressors}`
+  );
+  /*ciblage des produits concernés par la modification de quantité 
+    grâce aux dataset.color & dataset.id de la balise 'article' la
+    plus proches de l'input.itemQuantity*/
   for (let selector of quantitySelectors) {
     /*ciblage des produits concernés par la modification de quantité 
     grâce aux dataset.color & dataset.id de la balise 'article' la
     plus proches de l'input.itemQuantity*/
-    let productFixer = selector.closest('article');
-    
-     selector.addEventListener('change',()=>{
+    let productFixer = selector.closest("article");
+    selector.addEventListener("change", () => {
       /* boucle sur cart pour pour trouver la correspondance entre le produit
       ciblé et le produit du pannier dont la quantité doit être modifiée*/
-      cart.forEach(prod => {
+      cart.forEach((prod) => {
         if (
-        (prod.color===productFixer.dataset.color)
-        &&
-        (prod.id===productFixer.dataset.id)){
-          if (selector.value >= 100){ 
-            alert(`Vous avez atteint la limite des 100 articles maximum pour la gamme ${prod.name} colori ${prod.color}`);
-           }
-            prod.amount = selector.value;
-            localStorage.cart = JSON.stringify(cart);
+          prod.color === productFixer.dataset.color &&
+          prod.id === productFixer.dataset.id
+        ) {
+          if (selector.value >= 100) {
+            alert(
+              `Vous avez atteint la limite des 100 articles maximum pour la gamme ${prod.name} colori ${prod.color}`
+            );
+          }
+          prod.amount = selector.value;
+          localStorage.cart = JSON.stringify(cart);
         }
       });
-    }); 
+    });
+  }
+
+  for (let suppressor of productSuppressors) {
+    //Ciblage des produits concernés par la suppression
+    let productFixer = suppressor.closest("article");
+    suppressor.addEventListener("click", () => {
+      /* boucle sur cart pour pour trouver la correspondance entre le produit
+      ciblé et le produit du pannier à supprimer*/
+      cart = cart.filter(
+        //puis met à jour cart[] sans le produit supprimé
+        (prod) =>
+          (prod.color !== productFixer.dataset.color ||
+          prod.id !== productFixer.dataset.id)
+      );
+      alert("produit supprimer");
+      productFixer.remove();
+      localStorage.cart = JSON.stringify(cart);
+    });
   }
 }
 
@@ -99,5 +124,3 @@ submitBtn.addEventListener("click", () => {
 });
 
 datacollector();
-
-// document.addEventListener('change',alert('quelque chose à changé'))
