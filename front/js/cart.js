@@ -5,10 +5,7 @@ let cart = localStorage.cart
 const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
-let totalQuantity = 0;
-let totalOrder = 0;
 const submitBtn = document.getElementById("order");
-let cartWhithoutProd;
 
 async function datacollector() {
   // POUR CHAQUES OBJETS DE 'cart', RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT
@@ -50,12 +47,10 @@ async function datacollector() {
               </div>
             </article>
           `;
-        // SOMME DES PRODUIT ET PRIX TOTAL
-        totalQuantity += +elements.amount;
-        totalQuantityAnchor.innerText = totalQuantity;
-        totalOrder += +(elements.amount * elements.price);
-        totalPriceAnchor.innerText = totalOrder;
+       
         console.log("avant ?");
+        //mise à jour du total produit
+      totalPrice()
       })
       .catch((err) => {
         console.log(err);
@@ -91,7 +86,10 @@ async function quantityAjustor() {
       } else {
         // saisie conforme = ajustement de la quantité au pannier (cart['produit ciblé'.amount])
         similarProductStored.amount = selector.value;
-      }// mise à jour du stockage Local
+      }
+      //mise à jour du total produit
+      totalPrice()
+      // mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
     });
   }
@@ -111,6 +109,8 @@ async function quantityAjustor() {
       alert("produit supprimer");
       //suppression du noeud dans le Dom
       productFixer.remove();
+      //mise à jour du total produit
+      totalPrice()
       // mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
     });
@@ -121,4 +121,16 @@ submitBtn.addEventListener("click", () => {
   alert("commande envoyée");
 });
 
+function totalPrice(){
+  // SOMME DES PRODUIT ET PRIX TOTAL
+  let totalQuantity = 0
+  let totalOrder = 0
+  for (let product of cart){
+    
+    totalQuantity += +product.amount;
+    totalQuantityAnchor.innerText = totalQuantity;
+    
+    totalOrder += +(product.amount * product.price);
+    totalPriceAnchor.innerText = totalOrder;}
+}
 datacollector();
