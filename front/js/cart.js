@@ -69,34 +69,30 @@ async function quantityAjustor() {
   //NodeList() des balises input.itemQuantity et p.deleteItem
   const quantitySelectors = document.querySelectorAll("input.itemQuantity");
   const productSuppressors = document.querySelectorAll("p.deleteItem");
-  console.log(
-    `quantitySelectors = ${quantitySelectors}productSuppressors = ${productSuppressors}`
-  );
+
   /*ciblage des produits concernés par la modification de quantité 
     grâce aux dataset.color & dataset.id de la balise 'article' la
-    plus proches de l'input.itemQuantity*/
+    plus proches de chaques input.itemQuantity*/
   for (let selector of quantitySelectors) {
-    /*ciblage des produits concernés par la modification de quantité 
-    grâce aux dataset.color & dataset.id de la balise 'article' la
-    plus proches de l'input.itemQuantity*/
-    let productFixer = selector.closest("article");
+    const productFixer = selector.closest("article");
+    const similarProductStored = cart.find(
+      (produit) =>
+        produit.color === productFixer.dataset.color &&
+        produit.id === productFixer.dataset.id
+    );
     selector.addEventListener("change", () => {
-      /* boucle sur cart pour pour trouver la correspondance entre le produit
-      ciblé et le produit du pannier dont la quantité doit être modifiée*/
-      cart.forEach((prod) => {
-        if (
-          prod.color === productFixer.dataset.color &&
-          prod.id === productFixer.dataset.id
-        ) {
-          if (selector.value >= 100) {
-            alert(
-              `Vous avez atteint la limite des 100 articles maximum pour la gamme ${prod.name} colori ${prod.color}`
-            );
-          }
-          prod.amount = selector.value;
-          localStorage.cart = JSON.stringify(cart);
-        }
-      });
+      //vérifier si la saisie est conforme (quantité entre 1 et 100 articles)
+      if (selector.value < 1 || selector.value > 100) {
+        alert(
+          `Désolé, la quantité de canapé de gamme ${similarProductStored.name} colori ${similarProductStored.color} doit être comprise entre 1 et 100 articles. `
+        );
+        // restauration de la saisie precedente
+        selector.value = similarProductStored.amount;
+      } else {
+        // saisie conforme = ajustement de la quantité au pannier (cart['produit ciblé'.amount])
+        similarProductStored.amount = selector.value;
+      }// mise à jour du stockage Local
+      localStorage.cart = JSON.stringify(cart);
     });
   }
 
@@ -109,11 +105,13 @@ async function quantityAjustor() {
       cart = cart.filter(
         //puis met à jour cart[] sans le produit supprimé
         (prod) =>
-          (prod.color !== productFixer.dataset.color ||
-          prod.id !== productFixer.dataset.id)
+          prod.color !== productFixer.dataset.color ||
+          prod.id !== productFixer.dataset.id
       );
       alert("produit supprimer");
+      //suppression du noeud dans le Dom
       productFixer.remove();
+      // mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
     });
   }

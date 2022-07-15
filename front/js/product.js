@@ -75,20 +75,20 @@ document.getElementById("addToCart").addEventListener("click", () => {
     );
   } else {
     //Sinon, ajout de la quantité saisie sur la page au total déja présent au pannier
-    similarProductStored.amount =
-      Number(similarProductStored.amount) + Number(quantity.value);
+    similarProductStored.amount = Number(similarProductStored.amount) + Number(quantity.value);
 
-    // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
-    if (similarProductStored.amount >= 100) {
-      similarProductStored.amount = 100;
-      alert(
-        `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`
-      );
-    } else {
-      alert(
-        `Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au pannier`
-      );
-    }
+      // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
+      if (similarProductStored.amount >= 100) {
+        similarProductStored.amount = 100;
+        alert(
+          `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`
+        );
+        quantity.value = 100;
+      } else {
+        alert(
+          `Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au pannier`
+        );
+      }
   }
   //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
   localStorage.cart = JSON.stringify(cart);
