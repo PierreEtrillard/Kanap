@@ -5,18 +5,6 @@ let cart = localStorage.cart
 const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
-// CONSTANTES FORMULAIRE
-const firstName = document.getElementById('firstName')
-const firstNameErrorMsg = document.getElementById('firstNameErrorMsg')
-const lastName = document.getElementById('lastName')
-const lastNameErrorMsg = document.getElementById('lastNameErrorMsg')
-const address = document.getElementById('address')
-const addressErrorMsg = document.getElementById('addressErrorMsg')
-const city = document.getElementById('city')
-const cityErrorMsg = document.getElementById('cityErrorMsg')
-const email = document.getElementById('email')
-const emailErrorMsg = document.getElementById('emailErrorMsg')
-const submitBtn = document.getElementById("order");
 
 async function datacollector() {
   // POUR CHAQUES OBJETS DE 'cart', RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT
@@ -58,10 +46,10 @@ async function datacollector() {
               </div>
             </article>
           `;
-       
+
         console.log("avant ?");
         //mise à jour du total produit
-      totalPrice()
+        totalPrice();
       })
       .catch((err) => {
         console.log(err);
@@ -99,7 +87,7 @@ async function quantityAjustor() {
         similarProductStored.amount = selector.value;
       }
       //mise à jour du total produit
-      totalPrice()
+      totalPrice();
       // mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
     });
@@ -121,7 +109,7 @@ async function quantityAjustor() {
       //suppression du noeud dans le Dom
       productFixer.remove();
       //mise à jour du total produit
-      totalPrice()
+      totalPrice();
       // mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
     });
@@ -129,62 +117,109 @@ async function quantityAjustor() {
 }
 
 // SOMME DES PRODUIT ET PRIX TOTAL
-function totalPrice(){  
-  let totalQuantity = 0
-  let totalOrder = 0
-  for (let product of cart){
+function totalPrice() {
+  let totalQuantity = 0;
+  let totalOrder = 0;
+  for (let product of cart) {
     totalQuantity += +product.amount;
-    totalQuantityAnchor.innerText = totalQuantity;    
+    totalQuantityAnchor.innerText = totalQuantity;
     totalOrder += +(product.amount * product.price);
-    totalPriceAnchor.innerText = totalOrder;}
+    totalPriceAnchor.innerText = totalOrder;
+  }
 }
-//---------------------------------------------------//
-// APPEL DE LA FONCTION GLOBAL
-datacollector();
 
+// CONSTANTES FORMULAIRE
+const firstName = document.getElementById("firstName");
+const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+const lastName = document.getElementById("lastName");
+const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+const address = document.getElementById("address");
+const addressErrorMsg = document.getElementById("addressErrorMsg");
+const city = document.getElementById("city");
+const cityErrorMsg = document.getElementById("cityErrorMsg");
+const email = document.getElementById("email");
+const emailErrorMsg = document.getElementById("emailErrorMsg");
+
+const submitBtn = document.getElementById("order");
+//    REGEX
+const regexName =
+  /^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\-\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
+const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']+/;
+const regexMail =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+// OBJET CONTACT:
+let contact;
+let order;
 // ECOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
-
-const regexName = new RegExp('^[A-Za-z- {2-20}]+![0-9]','g');
-const regexAddress = new RegExp('^[A-Za-z {2-20}]','g');
-const regexMail = new RegExp('^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$','g')
+let errTarget = "Coordonnées incomplètes";
 
 firstName.addEventListener("change", () => {
-  if (regexName.test(firstName.value))
-  {firstNameErrorMsg.innerText = "Prenom valide"}
-     else{
-    firstNameErrorMsg.innerText =  "Prenom non valide veuillez verifier qu'aucun chiffres ou caractère spéciaux ne soit inséré"}
- });
+  if (regexName.test(firstName.value)) {
+    firstNameErrorMsg.innerText = "ok";
+    lastName.style.border = "0";
+  } else {
+    firstNameErrorMsg.innerText = `"${firstName.value}" n'est pas un prénom valide, verifiez qu'aucun chiffres ou caractères spéciaux ne soit inséré"`;
+    errTarget = `"${firstName.value}" n'est pas un prénom valide`;
+  }
+});
 
 lastName.addEventListener("change", () => {
-  if (regexName.test(lastName.value))
-  {lastNameErrorMsg.innerText = "Nom valide"}
-  else{lastNameErrorMsg.innerText =  "Nom non valide veuillez verifier qu'aucun chiffres ou caractère spéciaux ne soit inséré"}
- 
+  if (regexName.test(lastName.value)) {
+    lastNameErrorMsg.innerText = "ok";
+    lastName.style.border = "0";
+  } else {
+    lastNameErrorMsg.innerText = `"${lastName.value}" n'est pas un Nom valide, merci de verifiez qu'aucun chiffres ou caractères spéciaux ne soit inséré"`;
+    errTarget = `"${lastName.value}" n'est pas un Nom valide`;
+  }
 });
 
 address.addEventListener("change", () => {
-
-  if (regexAddress.test(address.value)
-    // && regexAdress.test(address.value)
-    // && regexAdress.test(city.value)
-    // && regexMail.test(email.value)
-    )
-  {addressErrorMsg.innerText = "Prenom valide"}
-     else{
-    addressErrorMsg.innerText =  "Prenom non valide veuillez verifier qu'aucun chiffres ou caractère spéciaux ne soit inséré"}
- 
+  if (regexAddress.test(address.value)) {
+    addressErrorMsg.innerText = "ok";
+    address.style.border = "0";
+  } else {
+    addressErrorMsg.innerText = `"${address.value}" n'est pas une adresse valide, verifiez qu'aucun caractères spéciaux (ex: &!+) ne soit inséré"`;
+    errTarget = `"${address.value}" n'est pas une addresse valide`;
+  }
+});
+city.addEventListener("change", () => {
+  if (regexAddress.test(city.value)) {
+    cityErrorMsg.innerText = "ok";
+    city.style.border = "0";
+  } else {
+    cityErrorMsg.innerText = `"${city.value}" n'est pas un nom de ville valide`;
+    errTarget = `"${city.value}" n'est pas un nom de ville valide`;
+  }
 });
 
 email.addEventListener("change", () => {
-
-  if (regexMail.test(firstName.value)
-    // && regexName.test(lastName.value)
-    // && regexAdress.test(address.value)
-    // && regexAdress.test(city.value)
-    // && regexMail.test(email.value)
-    )
-  {emailErrorMsg.innerText = "Prenom valide"}
-     else{
-    emailErrorMsg.innerText =  "Prenom non valide veuillez verifier qu'aucun chiffres ou caractère spéciaux ne soit inséré"}
- 
+  if (regexMail.test(email.value)) {
+    emailErrorMsg.innerText = "ok";
+    email.style.border = "0";
+  } else {
+    emailErrorMsg.innerText = `"${email.value}" n'est pas un Email valide`;
+    errTarget = `"${email.value}" n'est pas un Email valide`;
+  }
 });
+
+//  EVENEMENT AU CLIC SUR BOUTON COMMANDE :
+const formFields = document.querySelectorAll(
+  ".cart__order__form__question>input"
+);
+submitBtn.addEventListener("click", () => {
+  //Test si champ du formulaire vide
+  for (let fields of formFields) {
+    let fieldsNames = fields.previousElementSibling.textContent;
+    if (fields.value === "") {
+      alert(`Le champs "${fieldsNames}" du formulaire est vide`);
+      fields.style.border = "solid 2px red";
+    } else {
+      contact += {
+        fieldsNames: fields.value,
+      };
+    }
+  }
+});
+//---------------------------------------------------//
+// APPEL DE LA FONCTION GLOBAL
+datacollector();

@@ -1,21 +1,3 @@
-/**
- * Send request to the api for obtain the arrays af product
- * @param { String } url
- * @param { String } method
- * @param { Object } body
- * @return { Promise }
- */
-/*Les fiches produits à récupérer auprès de l'api sont contenu dans un tableau d'objets
- et ont la structure suivante: {
-   colors: Array(),
-   _id: 'string',
-   name: 'string',
-   price: number,
-   imageUrl: 'url',
-   altTxt: 'string',
-   description:'string'
-  }*/
-
   //requéte des produits à l'api
   fetch("http://localhost:3000/api/products")
     .then((res) =>{
