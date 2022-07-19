@@ -237,7 +237,7 @@ function orderSender(data) {
   })
     .then((res) => res.json())
     .then((value) => 
-      window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?${value.orderId}`
+      window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?order=${value.orderId}`
     )
     .catch((err) => console.log(err));
 }
