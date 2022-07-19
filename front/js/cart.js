@@ -147,16 +147,14 @@ const regexName =
 const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']+/;
 const regexMail =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-// OBJET CONTACT:
-let contact;
-let order;
+
 // ECOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
 let errTarget = "Coordonnées incomplètes";
 
 firstName.addEventListener("change", () => {
   if (regexName.test(firstName.value)) {
     firstNameErrorMsg.innerText = "ok";
-    lastName.style.border = "0";
+    firstName.style.border = "0";
   } else {
     firstNameErrorMsg.innerText = `"${firstName.value}" n'est pas un prénom valide, verifiez qu'aucun chiffres ou caractères spéciaux ne soit inséré"`;
     errTarget = `"${firstName.value}" n'est pas un prénom valide`;
@@ -203,23 +201,46 @@ email.addEventListener("change", () => {
 });
 
 //  EVENEMENT AU CLIC SUR BOUTON COMMANDE :
+let contactData = {};
 const formFields = document.querySelectorAll(
   ".cart__order__form__question>input"
 );
 submitBtn.addEventListener("click", () => {
   //Test si champ du formulaire vide
+  let formFilled = false;
   for (let fields of formFields) {
-    let fieldsNames = fields.previousElementSibling.textContent;
+    let fieldsNames = fields.previousElementSibling;
     if (fields.value === "") {
-      alert(`Le champs "${fieldsNames}" du formulaire est vide`);
+      alert(`Le champs "${fieldsNames.textContent}" du formulaire est vide`);
       fields.style.border = "solid 2px red";
     } else {
-      contact += {
-        fieldsNames: fields.value,
-      };
+      (contactData[`${fields.id}`] = `${fields.value}`), (formFilled = true);
     }
   }
+  if (formFilled) {
+    let productsIds = [];
+    cart.forEach((prod) => productsIds.push(prod.id));
+    let order = {};
+    order.products = productsIds;
+    order.contact = contactData;
+    orderSender(order);
+  }
 });
-//---------------------------------------------------//
+// POST les données à l'API
+function orderSender(data) {
+  fetch("http://localhost:3000/api/products/order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((value) => 
+      window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?${value.orderId}`
+    )
+    .catch((err) => console.log(err));
+}
+
 // APPEL DE LA FONCTION GLOBAL
 datacollector();
