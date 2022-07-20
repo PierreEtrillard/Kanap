@@ -1,3 +1,4 @@
+// récuppère le pannier dans le localStorage, alerte si celui-ci n'est pas présent 
 let cart = localStorage.cart
   ? JSON.parse(localStorage.cart)
   : alert("le pannier est vide");
@@ -205,7 +206,8 @@ let contactData = {};
 const formFields = document.querySelectorAll(
   ".cart__order__form__question>input"
 );
-submitBtn.addEventListener("click", () => {
+submitBtn.addEventListener("click", (e) => {
+  e.preventDefault();
   //Test si champ du formulaire vide
   let formFilled = false;
   for (let fields of formFields) {
@@ -217,7 +219,8 @@ submitBtn.addEventListener("click", () => {
       (contactData[`${fields.id}`] = `${fields.value}`), (formFilled = true);
     }
   }
-  if (formFilled) {
+  // test si formulaire remplis et pannier n'est pas vide
+  if (formFilled && cart.length !==0) {
     let productsIds = [];
     cart.forEach((prod) => productsIds.push(prod.id));
     let order = {};
