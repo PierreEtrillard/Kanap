@@ -47,7 +47,6 @@ async function datacollector() {
               </div>
             </article>
           `;
-
         console.log("avant ?");
         //mise à jour du total produit
         totalPrice();
@@ -58,6 +57,30 @@ async function datacollector() {
   }
   quantityAjustor();
 }
+/*const promises = [];
+
+for (let elements of cart) {
+    const loopPromise = new Promise((resolve, reject) => {
+        fetch(`http://localhost:3000/api/products/${elements.id}`)
+          .then((res) => {
+            return res.ok
+              ? res.json()
+              : alert("Produit indisponible pour le moment.");
+          })
+          .then((value) => {
+              // code ici [..]
+              resolve(value, ...);
+          }
+          .catch((err) => {
+            console.log(err);
+            reject(err);
+          });
+    }
+    promises.push(loopPromise);
+}
+const results = await Promise.all(promises);
+Promise.all(promises).then().catch()
+*/
 // RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ
 async function quantityAjustor() {
   console.log("après ?");
@@ -106,7 +129,7 @@ async function quantityAjustor() {
           prod.color !== productFixer.dataset.color ||
           prod.id !== productFixer.dataset.id
       );
-      alert("produit supprimer");
+      alert(`${productFixer.dataset.color} supprimé`);
       //suppression du noeud dans le Dom
       productFixer.remove();
       //mise à jour du total produit
@@ -152,62 +175,32 @@ const regexMail =
 // ECOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
 let errTarget = "Coordonnées incomplètes";
 
-firstName.addEventListener("change", () => {
-  if (regexName.test(firstName.value)) {
-    firstNameErrorMsg.innerText = "ok";
-    firstName.style.border = "0";
+function formListener(field,regex,fieldErrorMsg)
+{field.addEventListener("change", () => {
+  if (regex.test(field.value)) {
+    fieldErrorMsg.innerText = "ok";
+    field.style.border = "0";
+    submitBtn.disabled = false
   } else {
-    firstNameErrorMsg.innerText = `"${firstName.value}" n'est pas un prénom valide, verifiez qu'aucun chiffres ou caractères spéciaux ne soit inséré"`;
-    errTarget = `"${firstName.value}" n'est pas un prénom valide`;
+    fieldErrorMsg.innerText = `${field.previousElementSibling.textContent} "${field.value}" n'est pas une entrée correcte"`;
+    errTarget = `"${field.value}" n'est pas une entré valide`;
+    submitBtn.disabled = true
   }
-});
+});}
 
-lastName.addEventListener("change", () => {
-  if (regexName.test(lastName.value)) {
-    lastNameErrorMsg.innerText = "ok";
-    lastName.style.border = "0";
-  } else {
-    lastNameErrorMsg.innerText = `"${lastName.value}" n'est pas un Nom valide, merci de verifiez qu'aucun chiffres ou caractères spéciaux ne soit inséré"`;
-    errTarget = `"${lastName.value}" n'est pas un Nom valide`;
-  }
-});
-
-address.addEventListener("change", () => {
-  if (regexAddress.test(address.value)) {
-    addressErrorMsg.innerText = "ok";
-    address.style.border = "0";
-  } else {
-    addressErrorMsg.innerText = `"${address.value}" n'est pas une adresse valide, verifiez qu'aucun caractères spéciaux (ex: &!+) ne soit inséré"`;
-    errTarget = `"${address.value}" n'est pas une addresse valide`;
-  }
-});
-city.addEventListener("change", () => {
-  if (regexAddress.test(city.value)) {
-    cityErrorMsg.innerText = "ok";
-    city.style.border = "0";
-  } else {
-    cityErrorMsg.innerText = `"${city.value}" n'est pas un nom de ville valide`;
-    errTarget = `"${city.value}" n'est pas un nom de ville valide`;
-  }
-});
-
-email.addEventListener("change", () => {
-  if (regexMail.test(email.value)) {
-    emailErrorMsg.innerText = "ok";
-    email.style.border = "0";
-  } else {
-    emailErrorMsg.innerText = `"${email.value}" n'est pas un Email valide`;
-    errTarget = `"${email.value}" n'est pas un Email valide`;
-  }
-});
+formListener(firstName,regexName,firstNameErrorMsg);
+formListener(lastName,regexName,lastNameErrorMsg);
+formListener(address,regexAddress,addressErrorMsg);
+formListener(city,regexAddress,cityErrorMsg);
+formListener(email,regexMail,emailErrorMsg);
 
 //  EVENEMENT AU CLIC SUR BOUTON COMMANDE :
 let contactData = {};
 const formFields = document.querySelectorAll(
   ".cart__order__form__question>input"
 );
-submitBtn.addEventListener("click", (e) => {
-  e.preventDefault();
+submitBtn.addEventListener("click",(e)=> {
+  e.preventDefault()// évite le rechargemnt de la page
   //Test si champ du formulaire vide
   let formFilled = false;
   for (let fields of formFields) {
@@ -216,17 +209,21 @@ submitBtn.addEventListener("click", (e) => {
       alert(`Le champs "${fieldsNames.textContent}" du formulaire est vide`);
       fields.style.border = "solid 2px red";
     } else {
-      (contactData[`${fields.id}`] = `${fields.value}`), (formFilled = true);
+      contactData[`${fields.id}`] = `${fields.value}`
+      formFilled = true;
     }
   }
   // test si formulaire remplis et pannier n'est pas vide
   if (formFilled && cart.length !==0) {
+    
     let productsIds = [];
     cart.forEach((prod) => productsIds.push(prod.id));
     let order = {};
     order.products = productsIds;
     order.contact = contactData;
     orderSender(order);
+  }else{
+    submitBtn.disabled = true
   }
 });
 // POST les données à l'API
@@ -242,7 +239,7 @@ function orderSender(data) {
     .then((value) => 
       window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?order=${value.orderId}`
     )
-    .catch((err) => console.log(err));
+    .catch((err) => alert(err));
 }
 
 // APPEL DE LA FONCTION GLOBAL
