@@ -10,22 +10,30 @@ const quantity = document.getElementById("quantity");
 // Bouton d'envoi
 const addToCart = document.getElementById("addToCart");
 //  Toast pour avertissement aux utilisateur
-function toastAlert(target, message, color) {
+let toastWeapper = document.createElement("div.toast");
+function toastAlert(message, color) {
   // let toast = document.createElement('div');
-  target.setAttribute(
-    "style",
-    `
-    position : absolute;
-    font-size: 22px;
-    border-radius: 40px;
-    border: 0;
-    background-color: ${color};
-    color: var(--secondary-color);
-    padding: 18px 28px;
-    cursor: pointer;
-`
-  );
-  target.innerText = message;
+  document.body.innerHTML +=
+   `<div id = "popup"style="
+      position: fixed;
+      max-width: 80%;
+      height: fit-content;
+      top: 10px;
+      left: 5%;
+      right: 5%;
+      margin:20px;
+      font-size: 22px;
+      background-color:  var(--secondary-color);
+      color: ${color};
+      box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
+      border-radius: 40px;
+      text-align: center;
+      padding: 30px;
+      ">
+      ${message}
+    </div>
+`;
+setTimeout(()=>document.getElementById('popup').remove(),2500)
 }
 //----------------------------------------------------------------------------
 
@@ -41,7 +49,7 @@ fetch(`http://localhost:3000/api/products/${productId}`)
   })
   //      EXTRACTION DES DONNÉES & IMPLÉMENTATION DE CELLES-CI DANS LE DOM
   .then((value) => {
-    productName = value.name; // <- variable utilisé pour les interactions utilisateur lors des saisies du pannier
+    productName = value.name; // <- variable utilisé pour les interactions utilisateur lors des saisies du panier
     document.querySelector(
       "div.item__img"
     ).innerHTML = `<img src="${value.imageUrl}" alt="photographie du modéle ${value.name}">`;
@@ -63,43 +71,35 @@ fetch(`http://localhost:3000/api/products/${productId}`)
     );
   });
 // INTERACTION AVEC L'UTILISATEUR
-
 function alertValue(selector) {
-  selector.previousElementSibling.setAttribute("style", "color:darkred");
-  selector.setAttribute("style", "border:2px solid darkred");
+  selector.previousElementSibling.setAttribute("style", "color:red");
+  selector.setAttribute("style", "border:2px solid red");
   addToCart.setAttribute("style", "cursor: not-allowed;");
 }
 function stopAlert(selector) {
   selector.previousElementSibling.style.color = "";
   selector.style.border = "0";
-  addToCart.style.cursor= "pointer";
+  addToCart.style.cursor = "pointer";
 }
-//Avertissement au survol du bouton "Ajouter au panier"
-addToCart.addEventListener("mouseover", () => {
-  //  Vérifie la saisies de quantité et de couleurs
-  if (colorChoice.value == "") {
-    alertValue(colorChoice);
-  }
-  if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
-    alertValue(quantity);
-  }
-});
+
 colorChoice.addEventListener("change", () => {
   stopAlert(colorChoice);
 });
 quantity.addEventListener("change", () => {
   stopAlert(quantity);
 });
-/*  REMPLISSAGE DU PANNIER AU CLIC AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDE 
+/*  REMPLISSAGE DU panier AU CLIC AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDE 
   OU AVEC LES DONNÉES PRÉCEDEMMENT SAISIE (contenu dans le localstorage)*/
 
 addToCart.addEventListener("click", () => {
   //  Vérifie la saisies de quantité et de couleurs
   if (colorChoice.value == "") {
-    // alert("veuillez séléctionner la couleur de votre canapé.");
+    //  alert("veuillez séléctionner la couleur de votre canapé.");
+    return alertValue(colorChoice);
   }
   if (Number(quantity.value) < 1 || Number(quantity.value) > 100) {
     // return alert("veuillez saisir un nombre d'article entre 1 et 100.");
+    return alertValue(quantity);
   }
 
   //  SAISIE CONFORME = CONSTANTE POUR CIBLAGE DES PRODUITS DÉJA PRÉSENTS
@@ -110,21 +110,19 @@ addToCart.addEventListener("click", () => {
     //Si cart[] contient un produit similaire (même ID même couleur)
     similarProductStored
   ) {
-    //ajout de la quantité saisie sur la page au total déja présent au pannier
+    //ajout de la quantité saisie sur la page au total déja présent au panier
     similarProductStored.amount =
       Number(similarProductStored.amount) + Number(quantity.value);
 
     // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
     if (similarProductStored.amount >= 100) {
       similarProductStored.amount = 100;
-      alert(
-        `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`
-      );
+      toastAlert(
+        `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`,"red")
       quantity.value = 100;
     } else {
-      alert(
-        `Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au pannier`
-      );
+      toastAlert(`Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au panier`, "white")
+      ;
     }
   } else {
     //création d'un nouvel objet dans cart[]
@@ -133,15 +131,15 @@ addToCart.addEventListener("click", () => {
       color: `${colorChoice.value}`,
       amount: `${Number(quantity.value)}`,
     });
-    alert(
-      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au pannier`
+    toastAlert(
+      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au panier`,"white"
     );
   }
   /* OU   if (
     //Si cart[] ne contient pas de produit similaire (même ID même couleur)
     similarProductStored
   ) {
-    //Sinon, ajout de la quantité saisie sur la page au total déja présent au pannier
+    //Sinon, ajout de la quantité saisie sur la page au total déja présent au panier
     similarProductStored.amount = Number(similarProductStored.amount) + Number(quantity.value);
 
       // limitateur de quantité (si dépassement ou seuil atteint, réglage de la quantité à 100 et alerte l'utilisateur)
@@ -153,7 +151,7 @@ addToCart.addEventListener("click", () => {
         quantity.value = 100;
       } else {
         alert(
-          `Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au pannier`
+          `Vous venez d'ajouter ${quantity.value} ${productName} colori ${colorChoice.value} supplémentaires au panier`
         );
       }
 
@@ -165,7 +163,7 @@ addToCart.addEventListener("click", () => {
       amount: `${Number(quantity.value)}`,
     });
     alert(
-      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au pannier`
+      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au panier`
     );
   }*/
   //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
