@@ -9,10 +9,12 @@ let productName;
 //  Toast pour avertissement des modifications du panier
 function toastAlert(message, color) {
   // let toast = document.createElement('div');
-  let toast =  document.createElement('div')
-  document.body.appendChild(toast)
+  let toast = document.createElement("div");
+  document.body.appendChild(toast);
   // toast.setAttribute(id ,"popup");
-  toast.setAttribute('style' ,`
+  toast.setAttribute(
+    "style",
+    `
   position: fixed;
   max-width: 80%;
   height: fit-content;
@@ -20,22 +22,23 @@ function toastAlert(message, color) {
   left: 5%;
   right: 5%;
   margin:20px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   background-color:  var(--secondary-color);
   color: ${color};
   box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
   border-radius: 40px;
   text-align: center;
-  padding: 30px;`)
-toast.innerText = message
-setTimeout(()=>toast.remove(),3500)
+  padding: 30px;`
+  );
+  toast.innerText = message;
+  setTimeout(() => toast.remove(), 3500);
 }
 //  Selecteurs (couleurs & quantité)
 const colorChoice = document.getElementById("colors");
 const quantity = document.getElementById("quantity");
 // Bouton d'envoi
 const addToCart = document.getElementById("addToCart");
-// met les bordures du selecteur et son label en rouge s'il est mal renseigné 
+// met les bordures du selecteur et son label en rouge s'il est mal renseigné
 function alertValue(selector) {
   selector.previousElementSibling.setAttribute("style", "color:red");
   selector.setAttribute("style", "border:2px solid red");
@@ -84,7 +87,8 @@ fetch(`http://localhost:3000/api/products/${productId}`)
   })
   .catch((err) => {
     console.log(
-      "l'erreur suivante s'est produite lors du traitement de la fiche produit : " + err
+      "l'erreur suivante s'est produite lors du traitement de la fiche produit : " +
+        err
     );
   });
 
@@ -118,11 +122,15 @@ addToCart.addEventListener("click", () => {
     if (similarProductStored.amount >= 100) {
       similarProductStored.amount = 100;
       toastAlert(
-        `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`,"red")
+        `Vous avez atteint la limite des 100 articles maximum pour la gamme ${productName} colori ${colorChoice.value}`,
+        "red"
+      );
       quantity.value = 100;
     } else {
-      toastAlert(`Et ${quantity.value} de plus ! Vous avez actuellement ${similarProductStored.amount} ${productName} colori ${colorChoice.value} au panier`, "white")
-      ;
+      toastAlert(
+        `Vous avez actuellement ${similarProductStored.amount} ${productName} colori ${colorChoice.value} au panier`,
+        "white"
+      );
     }
   } else {
     //création d'un nouvel objet dans cart[]
@@ -132,7 +140,8 @@ addToCart.addEventListener("click", () => {
       amount: `${Number(quantity.value)}`,
     });
     toastAlert(
-      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au panier`,"white"
+      `Ajout de ${quantity.value} ${productName} colori ${colorChoice.value} au panier`,
+      "white"
     );
   }
   //    ENVOI DES DONNÉES DU TABLEAU 'cart' SOUS FORME DE CHAINE DE CARACTÈRE AU STOCKAGE LOCAL
