@@ -8,11 +8,11 @@ const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
 //  Toast pour avertissement des modifications
-function toastAlert(message, color) {
-  let toast = document.createElement("div");
+let toast = document.createElement("div");
   document.body.appendChild(toast);
   toast.setAttribute(
-    "style",    `
+    "style",
+    `
   position: fixed;
   max-width: 80%;
   height: fit-content;
@@ -22,15 +22,21 @@ function toastAlert(message, color) {
   margin:20px;
   font-size: 1.5rem;
   background-color:  var(--secondary-color);
-  color: ${color};
   border-radius: 40px;
   text-align: center;
   padding: 30px;
-  transition :1s;
-  transform :scalX(0) `
+  transform : scaleX(0);
+  transition : transform ease-out 0.3s;`
   );
+function toastAlert(message, color) {
+  toast.style.display = "block"
+  toast.style.color = `${color}`
+  toast.style.transform = "scaleX(1)";
   toast.innerText = message;
-  setTimeout(() => toast.remove(), 3500);
+  toast.style.transform = "";
+  setTimeout(() => {
+    toast.style.transform = "scaleX(0)";
+  }, 3000);
 }
 //------------------------  REQUÈTE DES DONNÉES AUPRÈS DE L'API ------------------------------
 const promisesFromApi = [];
@@ -52,13 +58,16 @@ for (let elements of cart) {
         elements["name"] = value.name;
         elements["price"] = value.price;
       })
-      .catch((err)=>{console.error(reject)})
+      .catch((err) => {
+        console.error(reject);
+      });
   });
   promisesFromApi.push(currentPromise);
 }
 
 //--------------------AFFICHAGE ET MISE A JOUR DU PANIER--------------------------------------
-Promise.all(promisesFromApi).then(() => {// après la résolution de toutes les requètes contenues dans promisesFromApi[]
+Promise.all(promisesFromApi).then(() => {
+  // après la résolution de toutes les requètes contenues dans promisesFromApi[]
   for (let elements of cart) {
     //implémentation des elements dans le DOM pour chaques produits
     itemsAnchor.innerHTML += `
@@ -138,6 +147,11 @@ function quantityAjustor() {
           prod.color !== productFixer.dataset.color ||
           prod.id !== productFixer.dataset.id
       );
+      //mise à jour du total produit
+      totalPrice();
+      // mise à jour du stockage Local
+      localStorage.cart = JSON.stringify(cart);
+
       let prodName = productFixer.querySelector(
         "div.cart__item__content > div.cart__item__content__description > h2"
       );
@@ -145,14 +159,12 @@ function quantityAjustor() {
         ` ${prodName.textContent}  ${productFixer.dataset.color} supprimé`
       );
       //suppression du noeud dans le Dom
-      productFixer.style.transition = 'all 0.5s ease-out'
-      productFixer.style.transform = 'scale(0) rotate(1turn)'
-      productFixer.style.opacity = '0'
-      setTimeout(()=>{productFixer.remove()},480);
-      //mise à jour du total produit
-      totalPrice();
-      // mise à jour du stockage Local
-      localStorage.cart = JSON.stringify(cart);
+      productFixer.style.transition = "all 0.5s ease-out";
+      productFixer.style.transform = "scale(0) rotate(1turn)";
+      productFixer.style.opacity = "0";
+      setTimeout(() => {
+        productFixer.remove();
+      }, 480);
     });
   }
 }
@@ -166,6 +178,10 @@ function totalPrice() {
     totalQuantityAnchor.innerText = totalQuantity;
     totalOrder += +(product.amount * product.price);
     totalPriceAnchor.innerText = totalOrder;
+  }
+  if (!cart || cart.length === 0) {
+    totalQuantityAnchor.innerText = "0";
+    totalPriceAnchor.innerText = "0";
   }
 }
 
@@ -190,7 +206,7 @@ function formListener(field, regex) {
   field.addEventListener("change", () => {
     if (regex.test(field.value)) {
       field.nextElementSibling.innerText = "ok";
-      //retour aux valeurs d'origines après correction d'erreur
+      //retour aux valeurs css d'origines après correction d'erreur
       field.style.border = "0";
       field.previousElementSibling.style.color = "";
       submitBtn.disabled = false;
@@ -233,26 +249,25 @@ submitBtn.addEventListener("click", (e) => {
   }
   e.preventDefault(); // évite le rechargemnt de la page
   //Test si champ du formulaire remplis
-  let formFilled = false;
-
+  let formEmpty = [];
   for (let field of formFields) {
-    // let fieldsNames = fields.previousElementSibling;
+    let fieldsNames = field.previousElementSibling.textContent;
     if (field.value === "") {
       field.style.border = "solid 2px red";
       field.previousElementSibling.style.color = "red";
-      toastAlert("Formulaire imcomplet", "red");
+
+      formEmpty.push(`${fieldsNames} le champs est vide \n`);
     } else {
       contactData[`${field.id}`] = `${field.value}`;
-      formFilled = true;
     }
   }
   //avertissemnet si formulaire vide
-  if (!formFilled) {
-    toastAlert("Le formulaire est vide", "red");
+  if (formEmpty.length > 0) {
+    toastAlert("Formulaire vide", "red");
   }
 
-  // test si formulaire remplis et pannier contient des articles
-  if (formFilled && cart.length !== 0) {
+  // test si formulaire remplis et panier contient des articles
+  if (formEmpty.length < 0 && cart.length !== 0) {
     //création de l'objet order contenant les données du formulaire et les produits
     let productsIds = [];
     cart.forEach((prod) => productsIds.push(prod.id));
@@ -260,10 +275,6 @@ submitBtn.addEventListener("click", (e) => {
     order.products = productsIds;
     order.contact = contactData;
     orderSender(order); // envoi l'objet à l'api
-  }
-  if (!cart) {
-    submitBtn.disabled = true;
-    toastAlert("Le panier est vide", "red");
   }
 });
 // POST les données à l'API

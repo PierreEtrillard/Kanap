@@ -6,12 +6,9 @@ const productId = actualUrl.searchParams.get("id");
 let productName;
 
 //    INTERACTIONS AVEC L'UTILISATEUR
-//  Toast pour avertissement des modifications du panier
-function toastAlert(message, color) {
-  // let toast = document.createElement('div');
-  let toast = document.createElement("div");
+//  Toast pour avertissement des modifications
+let toast = document.createElement("div");
   document.body.appendChild(toast);
-  // toast.setAttribute(id ,"popup");
   toast.setAttribute(
     "style",
     `
@@ -24,14 +21,22 @@ function toastAlert(message, color) {
   margin:20px;
   font-size: 1.5rem;
   background-color:  var(--secondary-color);
-  color: ${color};
-  box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
   border-radius: 40px;
+  box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
   text-align: center;
-  padding: 30px;`
+  padding: 30px;
+  transform : scaleX(0);
+  transition : transform ease-out 0.3s;`
   );
+function toastAlert(message, color) {
+  toast.style.display = "block"
+  toast.style.color = `${color}`
+  toast.style.transform = "scaleX(1)";
   toast.innerText = message;
-  setTimeout(() => toast.remove(), 3500);
+  toast.style.transform = "";
+  setTimeout(() => {
+    toast.style.transform = "scaleX(0)";
+  }, 3000);
 }
 //  Selecteurs (couleurs & quantité)
 const colorChoice = document.getElementById("colors");
