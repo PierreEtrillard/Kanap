@@ -1,21 +1,18 @@
-// récuppère le pannier dans le localStorage, alerte si celui-ci n'est pas présent
+// Récupère le pannier dans le localStorage, alerte si celui-ci n'est pas présent
 let cart = localStorage.cart
   ? JSON.parse(localStorage.cart)
-  : alert("le pannier est vide");
+  : alert("le panier est vide");
 
-//    INTERACTIONS AVEC L'UTILISATEUR
+//-----------------INTERACTIONS AVEC L'UTILISATEUR----------------------------------
 const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
-//  Toast pour avertissement des modifications du panier
+//  Toast pour avertissement des modifications
 function toastAlert(message, color) {
-  // let toast = document.createElement('div');
   let toast = document.createElement("div");
   document.body.appendChild(toast);
-  // toast.setAttribute(id ,"popup");
   toast.setAttribute(
-    "style",
-    `
+    "style",    `
   position: fixed;
   max-width: 80%;
   height: fit-content;
@@ -28,94 +25,76 @@ function toastAlert(message, color) {
   color: ${color};
   border-radius: 40px;
   text-align: center;
-  padding: 30px;`
+  padding: 30px;
+  transition :1s;
+  transform :scalX(0) `
   );
   toast.innerText = message;
   setTimeout(() => toast.remove(), 3500);
 }
-//--------------------AFFICHAGE ET MISE A JOUR DU PANIER--------------------------------------
-async function datacollector() {
-  // POUR CHAQUES OBJETS DE 'cart', RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉE DANS UN TABLEAU DE PROMESSES
-  for (let elements of cart) {
-    await fetch(`http://localhost:3000/api/products/${elements.id}`)
+//------------------------  REQUÈTE DES DONNÉES AUPRÈS DE L'API ------------------------------
+const promisesFromApi = [];
+/* POUR CHAQUES OBJETS DE 'cart': RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉES
+ DANS LE TABLEAU DE PROMESSES promisesFromApi[]*/
+for (let elements of cart) {
+  const currentPromise = new Promise((resolve, reject) => {
+    fetch(`http://localhost:3000/api/products/${elements.id}`)
       .then((res) => {
         return res.ok
           ? res.json()
           : alert("Produit indisponible pour le moment.");
       })
       .then((value) => {
-        // creation des argument imgSrc,altTxt, name, price pour chaques produits de cart[]
+        resolve(value);
+        // créra les arguments imgSrc,altTxt, name, price pour chaques produits de cart[] lorsque la requète sera résolue
         elements["imgSrc"] = value.imageUrl;
         elements["altTxt"] = value.altTxt;
         elements["name"] = value.name;
         elements["price"] = value.price;
-
-        // implémentation des elements dans le DOM pour chaques produits
-        itemsAnchor.innerHTML += `
-          <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
-              <div class="cart__item__img">
-                <img src="${elements.imgSrc}" alt="${elements.altTxt}">
-              </div>
-              <div class="cart__item__content">
-                <div class="cart__item__content__description">
-                  <h2>${elements.name}</h2>
-                  <p>${elements.color}</p>
-                  <p>${elements.price} €</p>
-                </div>
-                <div class="cart__item__content__settings">
-                  <div class="cart__item__content__settings__quantity">
-                    <p>Qté : </p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
-                  </div>
-                  <div class="cart__item__content__settings__delete">
-                    <p class="deleteItem">Supprimer</p>
-                  </div>
-                </div>
-              </div>
-            </article>
-          `;
-        console.log("avant ?");
-        //mise à jour du total produit
-        totalPrice();
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err)=>{console.error(reject)})
+  });
+  promisesFromApi.push(currentPromise);
+}
+
+//--------------------AFFICHAGE ET MISE A JOUR DU PANIER--------------------------------------
+Promise.all(promisesFromApi).then(() => {// après la résolution de toutes les requètes contenues dans promisesFromApi[]
+  for (let elements of cart) {
+    //implémentation des elements dans le DOM pour chaques produits
+    itemsAnchor.innerHTML += `
+       <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
+           <div class="cart__item__img">
+             <img src="${elements.imgSrc}" alt="${elements.altTxt}">
+           </div>
+           <div class="cart__item__content">
+           <div class="cart__item__content__description">
+               <h2>${elements.name}</h2>
+               <p>${elements.color}</p>
+               <p>${elements.price} €</p>
+           </div>
+          <div class="cart__item__content__settings">
+          <div class="cart__item__content__settings__quantity">
+        <p>Qté : </p>
+        <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
+        </div>
+        <div class="cart__item__content__settings__delete">
+        <p class="deleteItem">Supprimer</p>
+        </div>
+        </div>
+        </div>
+        </article>
+               `;
+    //mise à jour du total produit
+    totalPrice();
   }
   quantityAjustor();
-}
-/*const promises = [];
-
-for (let elements of cart) {
-    const loopPromise = new Promise((resolve, reject) => {
-        fetch(`http://localhost:3000/api/products/${elements.id}`)
-          .then((res) => {
-            return res.ok
-              ? res.json()
-              : alert("Produit indisponible pour le moment.");
-          })
-          .then((value) => {
-              // code ici [..]
-              resolve(value, ...);
-          }
-          .catch((err) => {
-            console.log(err);
-            reject(err);
-          });
-    }
-    promises.push(loopPromise);
-}
-const results = await Promise.all(promises);
-Promise.all(promises).then().catch()
-*/
-// RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ
-async function quantityAjustor() {
-  console.log("après ?");
+});
+// RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉS ET DE SUPPRESSIONS
+function quantityAjustor() {
   //NodeList() des balises input.itemQuantity
   const quantitySelectors = document.querySelectorAll("input.itemQuantity");
-  /*ciblage des produits concernés par la modification de quantité 
-    grâce aux dataset.color & dataset.id de la balise 'article' la
-    plus proches de chaques input.itemQuantity*/
+  /*ciblage des produits concernés par la modification de quantité grâce aux dataset.color & dataset.id
+  de la balise 'article' la plus proches de chaques input.itemQuantity*/
   for (let selector of quantitySelectors) {
     const productFixer = selector.closest("article");
     const similarProductStored = cart.find(
@@ -166,7 +145,10 @@ async function quantityAjustor() {
         ` ${prodName.textContent}  ${productFixer.dataset.color} supprimé`
       );
       //suppression du noeud dans le Dom
-      productFixer.remove();
+      productFixer.style.transition = 'all 0.5s ease-out'
+      productFixer.style.transform = 'scale(0) rotate(1turn)'
+      productFixer.style.opacity = '0'
+      setTimeout(()=>{productFixer.remove()},480);
       //mise à jour du total produit
       totalPrice();
       // mise à jour du stockage Local
@@ -187,8 +169,6 @@ function totalPrice() {
   }
 }
 
-// APPEL DE LA FONCTION GLOBAL
-datacollector();
 //---------------------------------PARTIE FORMULAIRE---------------------------------
 // CONSTANTES FORMULAIRE
 const firstName = document.getElementById("firstName");
@@ -200,7 +180,7 @@ const email = document.getElementById("email");
 const submitBtn = document.getElementById("order");
 //    REGEX
 const regexName =
-  /^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\-\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
+  /^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
 const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']{2,}/;
 const regexMail =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -210,7 +190,7 @@ function formListener(field, regex) {
   field.addEventListener("change", () => {
     if (regex.test(field.value)) {
       field.nextElementSibling.innerText = "ok";
-      //retour aux valeurs d'origines (utile après une erreur)
+      //retour aux valeurs d'origines après correction d'erreur
       field.style.border = "0";
       field.previousElementSibling.style.color = "";
       submitBtn.disabled = false;
@@ -246,6 +226,11 @@ const formFields = document.querySelectorAll(
   ".cart__order__form__question>input"
 );
 submitBtn.addEventListener("click", (e) => {
+  // avertissement au panier vide
+  if (!cart || cart.length === 0) {
+    submitBtn.disabled = true;
+    toastAlert("Le panier est vide", "red");
+  }
   e.preventDefault(); // évite le rechargemnt de la page
   //Test si champ du formulaire remplis
   let formFilled = false;
@@ -255,25 +240,28 @@ submitBtn.addEventListener("click", (e) => {
     if (field.value === "") {
       field.style.border = "solid 2px red";
       field.previousElementSibling.style.color = "red";
-      toastAlert("Le formulaire imcomplet", "red");
+      toastAlert("Formulaire imcomplet", "red");
     } else {
       contactData[`${field.id}`] = `${field.value}`;
-      formFilled = true;console.log(formFilled);
+      formFilled = true;
     }
   }
+  //avertissemnet si formulaire vide
   if (!formFilled) {
     toastAlert("Le formulaire est vide", "red");
   }
-  // test si formulaire remplis et pannier n'est pas vide
+
+  // test si formulaire remplis et pannier contient des articles
   if (formFilled && cart.length !== 0) {
-    console.log(formFilled)
+    //création de l'objet order contenant les données du formulaire et les produits
     let productsIds = [];
     cart.forEach((prod) => productsIds.push(prod.id));
     let order = {};
     order.products = productsIds;
     order.contact = contactData;
-    orderSender(order);
-  } else {
+    orderSender(order); // envoi l'objet à l'api
+  }
+  if (!cart) {
     submitBtn.disabled = true;
     toastAlert("Le panier est vide", "red");
   }
@@ -289,6 +277,7 @@ function orderSender(data) {
   })
     .then((res) => res.json())
     .then(
+      // redirection vers la page confirmation en insérant la réponse (id de commande) ds l'url
       (value) =>
         (window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?order=${value.orderId}`)
     )
