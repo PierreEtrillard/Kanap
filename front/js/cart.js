@@ -263,7 +263,7 @@ submitBtn.addEventListener("click", (e) => {
   }
   //avertissemnet si formulaire vide
   if (formEmpty.length > 0) {
-    toastAlert("Formulaire vide", "red");
+    toastAlert("Formulaire imcomplet", "red");
   }
 
   // test si formulaire remplis et panier contient des articles
@@ -284,7 +284,7 @@ function orderSender(data) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(data)
   })
     .then((res) => res.json())
     .then(
