@@ -23,10 +23,10 @@ toast.setAttribute(
   padding: 30px;
   transform : scaleX(0);
   transition : transform ease-out 0.3s;`
-  );
-  function toastAlert(message, color) {
-  toast.style.display = "block"
-  toast.style.color = `${color}`
+);
+function toastAlert(message, color) {
+  toast.style.display = "block";
+  toast.style.color = `${color}`;
   toast.style.transform = "scaleX(1)";
   toast.innerText = message;
   toast.style.transform = "";
@@ -60,7 +60,7 @@ for (let elements of cart) {
         elements["price"] = value.price;
       })
       .catch((err) => {
-        reject (console.error(err));
+        reject(console.error(err));
       });
   });
   promisesFromApi.push(currentPromise);
@@ -115,6 +115,8 @@ function quantityAjustor() {
     selector.addEventListener("change", () => {
       //Vérifie si la saisie est conforme (quantité entre 1 et 100 articles)
       if (selector.value < 1 || selector.value > 100) {
+        submitBtn.disabled = true;//désactive le bouton de soumission
+        submitBtn.style.cursor = "not-allowed";
         toastAlert(
           `La quantité doit être comprise entre 1 et 100 articles. `,
           "red"
@@ -126,6 +128,8 @@ function quantityAjustor() {
         similarProductStored.amount = selector.value;
         selector.style.border = "0";
         selector.previousElementSibling.style.color = "";
+        submitBtn.disabled = false;
+        submitBtn.style.cursor = "pointer";
       }
       // Mise à jour du total produit
       totalPrice();
@@ -198,10 +202,10 @@ const submitBtn = document.getElementById("order");
 submitBtn.style.cursor = "not-allowed";
 //    REGEX
 const regexName =
-/^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
+  /^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
 const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']{2,}/;
 const regexMail =
-/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 // ÉCOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
 function formListener(field, regex) {
@@ -218,6 +222,8 @@ function formListener(field, regex) {
       field.style.border = "red solid 2px";
       field.previousElementSibling.style.color = "red";
       submitBtn.style.cursor = "not-allowed";
+      submitBtn.disabled = true;
+      toastAlert("Formulaire incorrect", "red");
       // message pour champ vide
       if (field.value === "") {
         field.nextElementSibling.innerText = "le champ est vide";
@@ -241,48 +247,47 @@ let contactData = {}; //objet qui sera envoyé à l'api
 const formFields = document.querySelectorAll(
   //récupère toutes les entrées de formulaire
   ".cart__order__form__question>input"
-  );
-  let emptyFieldCounter = 5;
-  submitBtn.addEventListener("click", (e) => {
-    // avertissement au panier vide
-    if (!cart || cart.length === 0) {
-      toastAlert("Le panier est vide", "red");
-      submitBtn.style.cursor = "not-allowed";
-      submitBtn.disabled = true;
+);
+let emptyFieldCounter = 5;
+submitBtn.addEventListener("click", (e) => {
+  // avertissement au panier vide
+  if (!cart || cart.length === 0) {
+    toastAlert("Le panier est vide", "red");
+    submitBtn.style.cursor = "not-allowed";
+  }
+  e.preventDefault(); // évite le rechargemnt de la page
+  //Test si champ du formulaire rempli
+
+  for (let field of formFields) {
+    if (field.value === "") {
+      field.style.border = "solid 2px red";
+      field.previousElementSibling.style.color = "red";
+      toastAlert("Formulaire imcomplet", "red");
+    } else {
+      --emptyFieldCounter;
+      contactData[`${field.id}`] = `${field.value}`;
     }
-    e.preventDefault(); // évite le rechargemnt de la page
-    //Test si champ du formulaire rempli
-    
-    for (let field of formFields) {
-      if (field.value === "") {
-        field.style.border = "solid 2px red";
-        field.previousElementSibling.style.color = "red";
-        toastAlert("Formulaire imcomplet", "red");
-      } else {
-        --emptyFieldCounter;
-        contactData[`${field.id}`] = `${field.value}`;
-      }
-    }
-    // test si formulaire rempli et panier contient des articles
-    if (emptyFieldCounter === 0 && cart.length !== 0) {
-      //création de l'objet order contenant les données du formulaire et les produits
-      let productsIds = [];
-      cart.forEach((prod) => productsIds.push(prod.id));
-      let order = {};
-      order.products = productsIds;
-      order.contact = contactData;
-      orderSender(order); // envoi l'objet à l'api
-    }
-  });
-  
-  // POST les données à l'API
-  function orderSender(data) {
+  }
+  // test si formulaire rempli et panier contient des articles
+  if (emptyFieldCounter === 0 && cart.length !== 0) {
+    //création de l'objet order contenant les données du formulaire et les produits
+    let productsIds = [];
+    cart.forEach((prod) => productsIds.push(prod.id));
+    let order = {};
+    order.products = productsIds;
+    order.contact = contactData;
+    orderSender(order); // envoi l'objet à l'api
+  }
+});
+
+// POST les données à l'API
+function orderSender(data) {
   fetch("http://localhost:3000/api/products/order", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   })
     .then((res) => res.json())
     .then(
