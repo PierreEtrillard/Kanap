@@ -1,18 +1,13 @@
-// Récupère le pannier dans le localStorage, alerte si celui-ci n'est pas présent
-let cart = localStorage.cart
-  ? JSON.parse(localStorage.cart)
-  : alert("le panier est vide");
-
 //-----------------INTERACTIONS AVEC L'UTILISATEUR----------------------------------
 const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
 //  Toast pour avertissement des modifications
 let toast = document.createElement("div");
-  document.body.appendChild(toast);
-  toast.setAttribute(
-    "style",
-    `
+document.body.appendChild(toast);
+toast.setAttribute(
+  "style",
+  `
   position: fixed;
   max-width: 80%;
   height: fit-content;
@@ -23,12 +18,13 @@ let toast = document.createElement("div");
   font-size: 1.5rem;
   background-color:  var(--secondary-color);
   border-radius: 40px;
+  box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
   text-align: center;
   padding: 30px;
   transform : scaleX(0);
   transition : transform ease-out 0.3s;`
   );
-function toastAlert(message, color) {
+  function toastAlert(message, color) {
   toast.style.display = "block"
   toast.style.color = `${color}`
   toast.style.transform = "scaleX(1)";
@@ -38,9 +34,14 @@ function toastAlert(message, color) {
     toast.style.transform = "scaleX(0)";
   }, 3000);
 }
+//-------------------------------TRAITEMENT DE DONNÉES---------------------------------------
+// Récupère le panier dans le localStorage, alerte si celui-ci n'est pas présent
+let cart = localStorage.cart
+  ? JSON.parse(localStorage.cart)
+  : toastAlert("le panier est vide", "var(--main-color)");
 //------------------------  REQUÈTE DES DONNÉES AUPRÈS DE L'API ------------------------------
 const promisesFromApi = [];
-/* POUR CHAQUES OBJETS DE 'cart': RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉES
+/* POUR CHAQUE OBJET DE 'cart': RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉES
  DANS LE TABLEAU DE PROMESSES promisesFromApi[]*/
 for (let elements of cart) {
   const currentPromise = new Promise((resolve, reject) => {
@@ -52,24 +53,24 @@ for (let elements of cart) {
       })
       .then((value) => {
         resolve(value);
-        // créra les arguments imgSrc,altTxt, name, price pour chaques produits de cart[] lorsque la requète sera résolue
+        // créera les arguments imgSrc,altTxt, name, price pour chaque produit de cart[] lorsque la requète sera résolue
         elements["imgSrc"] = value.imageUrl;
         elements["altTxt"] = value.altTxt;
         elements["name"] = value.name;
         elements["price"] = value.price;
       })
       .catch((err) => {
-        console.error(reject);
+        reject (console.error(err));
       });
   });
   promisesFromApi.push(currentPromise);
 }
 
-//--------------------AFFICHAGE ET MISE A JOUR DU PANIER--------------------------------------
+//--------------------AFFICHAGE ET MISE À JOUR DU PANIER--------------------------------------
 Promise.all(promisesFromApi).then(() => {
   // après la résolution de toutes les requètes contenues dans promisesFromApi[]
   for (let elements of cart) {
-    //implémentation des elements dans le DOM pour chaques produits
+    //implémentation des élements dans le DOM pour chaque produit
     itemsAnchor.innerHTML += `
        <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
            <div class="cart__item__img">
@@ -98,12 +99,12 @@ Promise.all(promisesFromApi).then(() => {
   }
   quantityAjustor();
 });
-// RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉS ET DE SUPPRESSIONS
+// RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ ET DE SUPPRESSION
 function quantityAjustor() {
   //NodeList() des balises input.itemQuantity
   const quantitySelectors = document.querySelectorAll("input.itemQuantity");
-  /*ciblage des produits concernés par la modification de quantité grâce aux dataset.color & dataset.id
-  de la balise 'article' la plus proches de chaques input.itemQuantity*/
+  /*Ciblage des produits concernés par la modification de quantité grâce aux dataset.color & dataset.id
+  de la balise 'article' la plus proche de chaque input.itemQuantity*/
   for (let selector of quantitySelectors) {
     const productFixer = selector.closest("article");
     const similarProductStored = cart.find(
@@ -112,7 +113,7 @@ function quantityAjustor() {
         produit.id === productFixer.dataset.id
     );
     selector.addEventListener("change", () => {
-      //vérifier si la saisie est conforme (quantité entre 1 et 100 articles)
+      //Vérifie si la saisie est conforme (quantité entre 1 et 100 articles)
       if (selector.value < 1 || selector.value > 100) {
         toastAlert(
           `La quantité doit être comprise entre 1 et 100 articles. `,
@@ -121,14 +122,14 @@ function quantityAjustor() {
         selector.style.border = "red solid 2px";
         selector.previousElementSibling.style.color = "red";
       } else {
-        // saisie conforme = ajustement de la quantité au pannier (cart['produit ciblé'.amount])
+        // Saisie conforme = ajustement de la quantité au panier (cart['produit ciblé'.amount])
         similarProductStored.amount = selector.value;
         selector.style.border = "0";
         selector.previousElementSibling.style.color = "";
       }
-      //mise à jour du total produit
+      // Mise à jour du total produit
       totalPrice();
-      // mise à jour du stockage Local
+      // Mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
     });
   }
@@ -139,17 +140,17 @@ function quantityAjustor() {
   for (let suppressor of productSuppressors) {
     let productFixer = suppressor.closest("article");
     suppressor.addEventListener("click", () => {
-      /* boucle sur cart pour pour trouver la correspondance entre le produit
-      ciblé et le produit du pannier à supprimer*/
+      /* Boucle sur cart[] pour trouver la correspondance entre le produit
+      ciblé et le produit du panier à supprimer*/
       cart = cart.filter(
         //puis met à jour cart[] sans le produit supprimé
         (prod) =>
           prod.color !== productFixer.dataset.color ||
           prod.id !== productFixer.dataset.id
       );
-      //mise à jour du total produit
+      // Mise à jour du total produit
       totalPrice();
-      // mise à jour du stockage Local
+      // Mise à jour du stockage Local
       localStorage.cart = JSON.stringify(cart);
 
       let prodName = productFixer.querySelector(
@@ -158,7 +159,7 @@ function quantityAjustor() {
       toastAlert(
         ` ${prodName.textContent}  ${productFixer.dataset.color} supprimé`
       );
-      //suppression du noeud dans le Dom
+      // Suppression du noeud dans le Dom
       productFixer.style.transition = "all 0.5s ease-out";
       productFixer.style.transform = "scale(0) rotate(1turn)";
       productFixer.style.opacity = "0";
@@ -169,7 +170,7 @@ function quantityAjustor() {
   }
 }
 
-// SOMME DES PRODUIT ET PRIX TOTAL
+// SOMME DES PRODUITS ET PRIX TOTAL
 function totalPrice() {
   let totalQuantity = 0;
   let totalOrder = 0;
@@ -186,7 +187,7 @@ function totalPrice() {
 }
 
 //---------------------------------PARTIE FORMULAIRE---------------------------------
-// CONSTANTES FORMULAIRE
+// CONSTANTES DU FORMULAIRE
 const firstName = document.getElementById("firstName");
 const lastName = document.getElementById("lastName");
 const address = document.getElementById("address");
@@ -194,28 +195,28 @@ const city = document.getElementById("city");
 const email = document.getElementById("email");
 
 const submitBtn = document.getElementById("order");
+submitBtn.style.cursor = "not-allowed";
 //    REGEX
 const regexName =
-  /^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
+/^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
 const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']{2,}/;
 const regexMail =
-  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-// ECOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
+// ÉCOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
 function formListener(field, regex) {
   field.addEventListener("change", () => {
     if (regex.test(field.value)) {
       field.nextElementSibling.innerText = "ok";
-      //retour aux valeurs css d'origines après correction d'erreur
+      // Retour aux valeurs css d'origine après correction d'erreur
       field.style.border = "0";
       field.previousElementSibling.style.color = "";
       submitBtn.disabled = false;
       submitBtn.style.cursor = "pointer";
     } else {
-      //test regex ou champ vide
+      //test regex échoué ou champ vide:
       field.style.border = "red solid 2px";
       field.previousElementSibling.style.color = "red";
-      submitBtn.disabled = true;
       submitBtn.style.cursor = "not-allowed";
       // message pour champ vide
       if (field.value === "") {
@@ -235,50 +236,47 @@ formListener(address, regexAddress);
 formListener(city, regexAddress);
 formListener(email, regexMail);
 
-//  EVENEMENT AU CLIC SUR BOUTON COMMANDE :
+//  ÉVENEMENT AU CLIC SUR BOUTON COMMANDE :
 let contactData = {}; //objet qui sera envoyé à l'api
 const formFields = document.querySelectorAll(
-  //récuppère toutes les entrée de formulaire
+  //récupère toutes les entrées de formulaire
   ".cart__order__form__question>input"
-);
-submitBtn.addEventListener("click", (e) => {
-  // avertissement au panier vide
-  if (!cart || cart.length === 0) {
-    submitBtn.disabled = true;
-    toastAlert("Le panier est vide", "red");
-  }
-  e.preventDefault(); // évite le rechargemnt de la page
-  //Test si champ du formulaire remplis
-  let formEmpty = [];
-  for (let field of formFields) {
-    let fieldsNames = field.previousElementSibling.textContent;
-    if (field.value === "") {
-      field.style.border = "solid 2px red";
-      field.previousElementSibling.style.color = "red";
-
-      formEmpty.push(`${fieldsNames} le champs est vide \n`);
-    } else {
-      contactData[`${field.id}`] = `${field.value}`;
+  );
+  let emptyFieldCounter = 5;
+  submitBtn.addEventListener("click", (e) => {
+    // avertissement au panier vide
+    if (!cart || cart.length === 0) {
+      toastAlert("Le panier est vide", "red");
+      submitBtn.style.cursor = "not-allowed";
+      submitBtn.disabled = true;
     }
-  }
-  //avertissemnet si formulaire vide
-  if (formEmpty.length > 0) {
-    toastAlert("Formulaire imcomplet", "red");
-  }
-
-  // test si formulaire remplis et panier contient des articles
-  if (formEmpty.length < 0 && cart.length !== 0) {
-    //création de l'objet order contenant les données du formulaire et les produits
-    let productsIds = [];
-    cart.forEach((prod) => productsIds.push(prod.id));
-    let order = {};
-    order.products = productsIds;
-    order.contact = contactData;
-    orderSender(order); // envoi l'objet à l'api
-  }
-});
-// POST les données à l'API
-function orderSender(data) {
+    e.preventDefault(); // évite le rechargemnt de la page
+    //Test si champ du formulaire rempli
+    
+    for (let field of formFields) {
+      if (field.value === "") {
+        field.style.border = "solid 2px red";
+        field.previousElementSibling.style.color = "red";
+        toastAlert("Formulaire imcomplet", "red");
+      } else {
+        --emptyFieldCounter;
+        contactData[`${field.id}`] = `${field.value}`;
+      }
+    }
+    // test si formulaire rempli et panier contient des articles
+    if (emptyFieldCounter === 0 && cart.length !== 0) {
+      //création de l'objet order contenant les données du formulaire et les produits
+      let productsIds = [];
+      cart.forEach((prod) => productsIds.push(prod.id));
+      let order = {};
+      order.products = productsIds;
+      order.contact = contactData;
+      orderSender(order); // envoi l'objet à l'api
+    }
+  });
+  
+  // POST les données à l'API
+  function orderSender(data) {
   fetch("http://localhost:3000/api/products/order", {
     method: "POST",
     headers: {
