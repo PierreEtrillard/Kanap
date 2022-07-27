@@ -72,27 +72,26 @@ Promise.all(promisesFromApi).then(() => {
   for (let elements of cart) {
     //implémentation des élements dans le DOM pour chaque produit
     itemsAnchor.innerHTML += `
-       <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
-           <div class="cart__item__img">
-             <img src="${elements.imgSrc}" alt="${elements.altTxt}">
-           </div>
-           <div class="cart__item__content">
-           <div class="cart__item__content__description">
-               <h2>${elements.name}</h2>
-               <p>${elements.color}</p>
-               <p>${elements.price} €</p>
-           </div>
-          <div class="cart__item__content__settings">
+      <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
+        <div class="cart__item__img">
+          <img src="${elements.imgSrc}" alt="${elements.altTxt}">
+        </div>
+        <div class="cart__item__content">
+          <div class="cart__item__content__description">
+              <h2>${elements.name}</h2>
+              <p>${elements.color}</p>
+              <p>${elements.price} €</p>
+        </div>
+        <div class="cart__item__content__settings">
           <div class="cart__item__content__settings__quantity">
-        <p>Qté : </p>
-        <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
+            <p>Qté : </p>
+            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
+          </div>
+          <div class="cart__item__content__settings__delete">
+            <p class="deleteItem">Supprimer</p>
+          </div>
         </div>
-        <div class="cart__item__content__settings__delete">
-        <p class="deleteItem">Supprimer</p>
-        </div>
-        </div>
-        </div>
-        </article>
+      </article>
                `;
     //mise à jour du total produit
     totalPrice();
