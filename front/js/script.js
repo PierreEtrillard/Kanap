@@ -9,13 +9,10 @@
     .then((value) => {
       // "i" prendra la valeur de chaque indice du tableau fourni par l'api
       for (let i in value){
-      //    CRÉATION D'UNE "<div id='(valeur de l'id du produit visé)'>"  //
-      const newCard = document.createElement("div");
-      newCard.setAttribute("id", `${value[i]._id}`);
-    
+        
       // INTÉGRATION DU NOUVEL ÉLEMENT DANS LE DOM
       const itemWrapper = document.getElementById("items");
-      itemWrapper.appendChild(newCard).innerHTML =
+      itemWrapper.innerHTML +=
       `<a href="./product.html?id=${value[i]._id}">
           <article>
             <img src="${value[i].imageUrl}" alt="${value[i].altTxt}", ${value[i].name}">
