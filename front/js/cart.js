@@ -37,21 +37,21 @@ function toastAlert(message, color) {
 //-------------------------------TRAITEMENT DE DONNÉES---------------------------------------
 // Récupère le panier dans le localStorage, alerte si celui-ci n'est pas présent
 let cart = localStorage.cart
-  ? JSON.parse(localStorage.cart)
-  : toastAlert("le panier est vide", "var(--main-color)");
+? JSON.parse(localStorage.cart)
+: toastAlert("le panier est vide", "var(--main-color)");
 //------------------------  REQUÈTE DES DONNÉES AUPRÈS DE L'API ------------------------------
 const promisesFromApi = [];
 /* POUR CHAQUE OBJET DE 'cart': RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉES
- DANS LE TABLEAU DE PROMESSES promisesFromApi[]*/
+DANS LE TABLEAU DE PROMESSES promisesFromApi[]*/
 for (let elements of cart) {
   const currentPromise = new Promise((resolve) => {
     fetch(`http://localhost:3000/api/products/${elements.id}`)
-      .then((res) => {
-        return res.ok
-          ? res.json()
-          : alert("Produit indisponible pour le moment.");
-      })
-      .then((value) => {
+    .then((res) => {
+      return res.ok
+      ? res.json()
+      : alert("Produit indisponible pour le moment.");
+    })
+    .then((value) => {
         // créera les arguments imgSrc,altTxt, name, price pour chaque produit de cart[] lorsque la requète sera résolue
         elements["imgSrc"] = value.imageUrl;
         elements["altTxt"] = value.altTxt;
@@ -64,10 +64,10 @@ for (let elements of cart) {
   }
   
   //--------------------AFFICHAGE ET MISE À JOUR DU PANIER--------------------------------------
-  Promise.all(promisesFromApi).then(() => {
+  Promise.all(promisesFromApi).then((value) => {console.log(typeof value);
     // après la résolution de toutes les requètes contenues dans promisesFromApi[]
     for (let elements of cart) {
-      //implémentation des élements dans le DOM pour chaque produit
+      //implémentera les élements dans le DOM pour chaque produit
       itemsAnchor.innerHTML += `
       <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
       <div class="cart__item__img">
@@ -90,7 +90,7 @@ for (let elements of cart) {
               </div>
               </article>
               `;
-              //mise à jour du total produit
+    //mise à jour du total produit
     totalPrice();
   }
   quantityAjustor();
