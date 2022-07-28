@@ -28,15 +28,18 @@ let toast = document.createElement("div");
   transform : scaleX(0);
   transition : transform ease-out 0.3s;`
   );
+  let timer 
 function toastAlert(message, color) {
-  toast.style.display = "block"
   toast.style.color = `${color}`
   toast.style.transform = "scaleX(1)";
   toast.innerText = message;
   toast.style.transform = "";
-  setTimeout(() => {
-    toast.style.transform = "scaleX(0)";
-  }, 3000);
+   
+  clearTimeout(--timer);
+  timer = setTimeout(() => {
+    toast.style.transform = "scaleX(0)"; 
+    console.log(timer);
+  }, 3000)
 }
 //  Sélecteurs (couleur & quantité)
 const colorChoice = document.getElementById("colors");
@@ -96,6 +99,7 @@ fetch(`http://localhost:3000/api/products/${productId}`)
       "l'erreur suivante s'est produite lors du traitement de la fiche produit : " +
         err
     );
+    toastAlert("Serveur indisponible","red")
   });
 
 /*  REMPLISSAGE DU PANIER AU CLIC AVEC L'ID, LA COULEUR ET LA QUANTITÉ DU PRODUIT À COMMANDER 

@@ -23,4 +23,5 @@
     })
     .catch((err) =>{
       console.log(err);
+      alert("Serveur indisponible")
     });

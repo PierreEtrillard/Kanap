@@ -25,7 +25,6 @@ toast.setAttribute(
   transition : transform ease-out 0.3s;`
 );
 function toastAlert(message, color) {
-  toast.style.display = "block";
   toast.style.color = `${color}`;
   toast.style.transform = "scaleX(1)";
   toast.innerText = message;
@@ -33,6 +32,7 @@ function toastAlert(message, color) {
   setTimeout(() => {
     toast.style.transform = "scaleX(0)";
   }, 3000);
+  
 }
 //-------------------------------TRAITEMENT DE DONNÉES---------------------------------------
 // Récupère le panier dans le localStorage, alerte si celui-ci n'est pas présent
@@ -44,7 +44,7 @@ const promisesFromApi = [];
 /* POUR CHAQUE OBJET DE 'cart': RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉES
  DANS LE TABLEAU DE PROMESSES promisesFromApi[]*/
 for (let elements of cart) {
-  const currentPromise = new Promise((resolve, reject) => {
+  const currentPromise = new Promise((resolve) => {
     fetch(`http://localhost:3000/api/products/${elements.id}`)
       .then((res) => {
         return res.ok
@@ -52,51 +52,52 @@ for (let elements of cart) {
           : alert("Produit indisponible pour le moment.");
       })
       .then((value) => {
-        resolve(value);
         // créera les arguments imgSrc,altTxt, name, price pour chaque produit de cart[] lorsque la requète sera résolue
         elements["imgSrc"] = value.imageUrl;
         elements["altTxt"] = value.altTxt;
         elements["name"] = value.name;
         elements["price"] = value.price;
+        resolve(value);
       })
-      .catch((err) => {
-        reject(console.error(err));
-      });
-  });
-  promisesFromApi.push(currentPromise);
-}
-
-//--------------------AFFICHAGE ET MISE À JOUR DU PANIER--------------------------------------
-Promise.all(promisesFromApi).then(() => {
-  // après la résolution de toutes les requètes contenues dans promisesFromApi[]
-  for (let elements of cart) {
-    //implémentation des élements dans le DOM pour chaque produit
-    itemsAnchor.innerHTML += `
+    });
+    promisesFromApi.push(currentPromise);
+  }
+  
+  //--------------------AFFICHAGE ET MISE À JOUR DU PANIER--------------------------------------
+  Promise.all(promisesFromApi).then(() => {
+    // après la résolution de toutes les requètes contenues dans promisesFromApi[]
+    for (let elements of cart) {
+      //implémentation des élements dans le DOM pour chaque produit
+      itemsAnchor.innerHTML += `
       <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
-        <div class="cart__item__img">
+      <div class="cart__item__img">
           <img src="${elements.imgSrc}" alt="${elements.altTxt}">
-        </div>
+          </div>
         <div class="cart__item__content">
-          <div class="cart__item__content__description">
+        <div class="cart__item__content__description">
               <h2>${elements.name}</h2>
               <p>${elements.color}</p>
               <p>${elements.price} €</p>
-        </div>
-        <div class="cart__item__content__settings">
-          <div class="cart__item__content__settings__quantity">
-            <p>Qté : </p>
-            <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
-          </div>
-          <div class="cart__item__content__settings__delete">
-            <p class="deleteItem">Supprimer</p>
-          </div>
-        </div>
-      </article>
-               `;
-    //mise à jour du total produit
+              </div>
+              <div class="cart__item__content__settings">
+              <div class="cart__item__content__settings__quantity">
+              <p>Qté : </p>
+              <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
+              </div>
+              <div class="cart__item__content__settings__delete">
+              <p class="deleteItem">Supprimer</p>
+              </div>
+              </div>
+              </article>
+              `;
+              //mise à jour du total produit
     totalPrice();
   }
   quantityAjustor();
+})
+.catch((err) => {
+  console.error(err);
+  toastAlert("Serveur indisponible","red")
 });
 // RECENSE TOUTES LES BALISES DE CONTRÔLE DE QUANTITÉ ET DE SUPPRESSION
 function quantityAjustor() {
@@ -206,8 +207,8 @@ const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']{2,}/;
 const regexMail =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-// ÉCOUTEUR D'ÉVÈNEMENTS SUR LE FORMULAIRE
-function formListener(field, regex) {
+// AIDE Ä LA VALIDATOIN DU FORMULAIRE
+function fieldValidator(field, regex) {
   field.addEventListener("change", () => {
     if (regex.test(field.value)) {
       field.nextElementSibling.innerText = "ok";
@@ -234,12 +235,11 @@ function formListener(field, regex) {
     }
   });
 }
-
-formListener(firstName, regexName);
-formListener(lastName, regexName);
-formListener(address, regexAddress);
-formListener(city, regexAddress);
-formListener(email, regexMail);
+fieldValidator(firstName, regexName);
+fieldValidator(lastName, regexName);
+fieldValidator(address, regexAddress);
+fieldValidator(city, regexAddress);
+fieldValidator(email, regexMail);
 
 //  ÉVENEMENT AU CLIC SUR BOUTON COMMANDE :
 let contactData = {}; //objet qui sera envoyé à l'api
