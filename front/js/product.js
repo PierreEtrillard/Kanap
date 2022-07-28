@@ -6,7 +6,7 @@ const productId = actualUrl.searchParams.get("id");
 let productName;
 
 //    INTERACTIONS AVEC L'UTILISATEUR
-//  Toast pour avertissement des modifications
+//  Toast pour messages d'alerte
 let toast = document.createElement("div");
   document.body.appendChild(toast);
   toast.setAttribute(
@@ -28,13 +28,13 @@ let toast = document.createElement("div");
   transform : scaleX(0);
   transition : transform ease-out 0.3s;`
   );
+// ouverture/fermeture du toast
   let timer 
 function toastAlert(message, color) {
   toast.style.color = `${color}`
   toast.style.transform = "scaleX(1)";
   toast.innerText = message;
-  toast.style.transform = "";
-   
+  toast.style.transform = "";   
   clearTimeout(--timer);
   timer = setTimeout(() => {
     toast.style.transform = "scaleX(0)"; 
