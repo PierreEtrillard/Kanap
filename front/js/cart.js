@@ -52,7 +52,7 @@ for (let elements of cart) {
       : alert("Produit indisponible pour le moment.");
     })
     .then((value) => {
-        // créera les arguments imgSrc,altTxt, name, price pour chaque produit de cart[] lorsque la requète sera résolue
+        // récupération des arguments imgSrc,altTxt, name, price pour chaque produit dans cart[] lorsque la requète sera résolue
         elements["imgSrc"] = value.imageUrl;
         elements["altTxt"] = value.altTxt;
         elements["name"] = value.name;
@@ -70,26 +70,26 @@ for (let elements of cart) {
       //implémentera les élements dans le DOM pour chaque produit
       itemsAnchor.innerHTML += `
       <article class="cart__item" data-id="${elements.id}" data-color="${elements.color}">
-      <div class="cart__item__img">
-          <img src="${elements.imgSrc}" alt="${elements.altTxt}">
+        <div class="cart__item__img">
+            <img src="${elements.imgSrc}" alt="${elements.altTxt}">
+            </div>
+          <div class="cart__item__content">
+          <div class="cart__item__content__description">
+            <h2>${elements.name}</h2>
+            <p>${elements.color}</p>
+            <p>${elements.price} €</p>
           </div>
-        <div class="cart__item__content">
-        <div class="cart__item__content__description">
-              <h2>${elements.name}</h2>
-              <p>${elements.color}</p>
-              <p>${elements.price} €</p>
-              </div>
-              <div class="cart__item__content__settings">
-              <div class="cart__item__content__settings__quantity">
+          <div class="cart__item__content__settings">
+            <div class="cart__item__content__settings__quantity">
               <p>Qté : </p>
               <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${elements.amount}">
-              </div>
-              <div class="cart__item__content__settings__delete">
+            </div>
+            <div class="cart__item__content__settings__delete">
               <p class="deleteItem">Supprimer</p>
-              </div>
-              </div>
-              </article>
-              `;
+            </div>
+          </div>
+       </article>
+                `;
     //mise à jour du total produit
     totalPrice();
   }
@@ -184,6 +184,7 @@ function totalPrice() {
     totalOrder += +(product.amount * product.price);
     totalPriceAnchor.innerText = totalOrder;
   }
+  // Dans les cas de suppression de tous les éléments du pannier, met 
   if (!cart || cart.length === 0) {
     totalQuantityAnchor.innerText = "0";
     totalPriceAnchor.innerText = "0";
@@ -202,12 +203,12 @@ const submitBtn = document.getElementById("order");
 submitBtn.style.cursor = "not-allowed";
 //    REGEX
 const regexName =
-  /^(?:((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
+  /^(?:((([^0-9_¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-.\s])){1,}(['’,\ -\.]){0,1}){2,}(([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-. ]))*(([ ]+){0,1}(((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){1,})(['’\-,\.]){0,1}){2,}((([^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]'’,\-\.\s])){2,})?)*)$/;
 const regexAddress = /^[A-Za-z0-9éïäëèà \-\.']{2,}/;
 const regexMail =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-// AIDE Ä LA VALIDATOIN DU FORMULAIRE
+// AIDE A LA VALIDATOIN DU FORMULAIRE
 function fieldValidator(field, regex) {
   field.addEventListener("change", () => {
     if (regex.test(field.value)) {
