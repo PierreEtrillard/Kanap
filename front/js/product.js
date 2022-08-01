@@ -6,42 +6,7 @@ const productId = actualUrl.searchParams.get("id");
 let productName;
 
 //-----------------------    INTERACTIONS AVEC L'UTILISATEUR    -------------------------
-//***********************    Toast pour messages d'alerte       *************************
-let toast = document.createElement("div");
-document.body.appendChild(toast);
-toast.setAttribute(
-  "style",
-  `
-  position: fixed;
-  max-width: 80%;
-  height: fit-content;
-  top: 10px;
-  left: 5%;
-  right: 5%;
-  margin:20px;
-  font-size: 1.5rem;
-  background-color:  var(--secondary-color);
-  border-radius: 40px;
-  box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
-  text-align: center;
-  padding: 30px;
-  transform : scaleX(0);
-  transition : transform ease-out 0.3s;`
-);
-// ouverture/fermeture du toast
-let timer;
-function toastAlert(message, color) {
-  //ouverture:
-  toast.style.color = `${color}`;
-  toast.style.transform = "scaleX(1)";
-  toast.innerText = message;
-  toast.style.transform = "";
-  clearTimeout(--timer); //prévient la fermeture du toast dans le cas de déclenchement répété de la fonction
-  // fermeture 3s plus tard:
-  timer = setTimeout(() => {
-    toast.style.transform = "scaleX(0)";
-  }, 3000);
-}
+
 //******************************  Sélecteurs (couleur & quantité)   ****************************
 const colorChoice = document.getElementById("colors");
 const quantity = document.getElementById("quantity");
@@ -65,8 +30,8 @@ quantity.addEventListener("change", () => {
   stopAlert(quantity);
 });
 //----------------------------------------------------------------------------
+//       RECUPÉRATION DES DETAILS DU PRODUIT AUPRÈS DE L'API
 const promiseFromApi = new Promise((resolve) => {
-  //       RECUPÉRATION DES DETAILS DU PRODUIT AUPRÈS DE L'API
   fetch(`http://localhost:3000/api/products/${productId}`)
     .then((res) => {
       //traitement de la réponse : si ok = capte la réponse sous forme d'un objet .json

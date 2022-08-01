@@ -2,43 +2,13 @@
 const itemsAnchor = document.getElementById("cart__items");
 const totalPriceAnchor = document.getElementById("totalPrice");
 const totalQuantityAnchor = document.getElementById("totalQuantity");
-//  Toast pour avertissement des modifications
-let toast = document.createElement("div");
-document.body.appendChild(toast);
-toast.setAttribute(
-  "style",
-  `
-  position: fixed;
-  max-width: 80%;
-  height: fit-content;
-  top: 10px;
-  left: 5%;
-  right: 5%;
-  margin:20px;
-  font-size: 1.5rem;
-  background-color:  var(--secondary-color);
-  border-radius: 40px;
-  box-shadow: rgba(42, 18, 206, 0.9) 0 0 22px 6px;
-  text-align: center;
-  padding: 30px;
-  transform : scaleX(0);
-  transition : transform ease-out 0.3s;`
-);
-function toastAlert(message, color) {
-  toast.style.color = `${color}`;
-  toast.style.transform = "scaleX(1)";
-  toast.innerText = message;
-  toast.style.transform = "";
-  setTimeout(() => {
-    toast.style.transform = "scaleX(0)";
-  }, 3000);
-  
-}
+
 //-------------------------------TRAITEMENT DE DONNÉES---------------------------------------
 // Récupère le panier dans le localStorage, alerte si celui-ci n'est pas présent
 let cart = localStorage.cart
 ? JSON.parse(localStorage.cart)
 : toastAlert("le panier est vide", "var(--main-color)");
+
 //------------------------  REQUÈTE DES DONNÉES AUPRÈS DE L'API ------------------------------
 const promisesFromApi = [];
 /* POUR CHAQUE OBJET DE 'cart': RECUPÈRE LES DONNÉES AUPRÈS DE L'API LE CONCERNANT ET STOCK LES DONNÉES
@@ -293,7 +263,7 @@ function orderSender(data) {
     .then(
       // redirection vers la page confirmation en insérant la réponse (id de commande) ds l'url
       (value) =>
-        (window.location.href = `http://127.0.0.1:5500/front/html/confirmation.html?order=${value.orderId}`)
+        (window.location.href = `http://localhost:5500/front/html/confirmation.html?order=${value.orderId}`)
     )
     .catch((err) => alert(err));
 }
